@@ -20,8 +20,11 @@ Schemas and invariants shared by the API, agents, and eval. Rationale in `DECISI
 ### `POST /ask` request
 
 ```
-question: str                      # non-empty
-history: list[Turn] = []
+AskRequest:
+  question: str                    # non-empty
+  history: list[Turn] = []
+
+Outcome: "answer" | "clarify" | "abstain" | "refuse"
 
 Turn:
   role: "user" | "assistant"
@@ -32,12 +35,13 @@ Turn:
 ### Response
 
 ```
-outcome: "answer" | "clarify" | "abstain" | "refuse"
-language: str                      # ISO 639-1, user's language
-message: str                       # meaning given by outcome
-citations: list[Citation]
-warnings: list[Warning]            # reserved; empty until structured safety warnings exist
-trace: Trace
+AskResponse:
+  outcome: Outcome
+  language: str                    # ISO 639-1, user's language
+  message: str                     # meaning given by outcome
+  citations: list[Citation]
+  warnings: list[Warning]          # reserved; empty until structured safety warnings exist
+  trace: Trace
 
 Citation:
   id: str                          # "c1", "c2", ...
@@ -65,8 +69,9 @@ The CLI takes the same request fields and prints the same response.
 ### Errors
 
 ```
-error: str                         # "invalid_request" | "provider_error" | "timeout"
-detail: str
+ErrorResponse:
+  error: str                       # "invalid_request" | "provider_error" | "timeout"
+  detail: str
 ```
 
 | Status | When |
@@ -124,7 +129,11 @@ out: ResearchResult
   outcome: "answer" | "clarify" | "abstain"
   message: str                     # answer: draft with [chunk_id] markers, user's language
                                    # clarify: the question; abstain: the reason
-  citations: list[{chunk_id: str, quote: str}]
+  citations: list[DraftCitation]
+
+DraftCitation:
+  chunk_id: str
+  quote: str
 ```
 
 ### Citation check (code)
@@ -140,15 +149,20 @@ out: issues: list[str]             # empty = pass
 in:  question, language, draft message, full text of cited chunks
 out: VerifierResult
   verdict: "pass" | "revise" | "abstain"
-  claims: list[{text: str, supported: bool, chunk_ids: list[str]}]
+  claims: list[Claim]
   issues: list[str]                # non-empty when verdict = revise
+
+Claim:
+  text: str
+  supported: bool
+  chunk_ids: list[str]
 ```
 
 ### Response builder (code)
 
 ```
 in:  IntakeResult, final ResearchResult | null, VerifierResult | null, retrieved chunks
-out: Response
+out: AskResponse
 ```
 
 ## Invariants
@@ -170,10 +184,11 @@ out: Response
 ### `eval/golden.jsonl` record
 
 ```
-id: str
-question: str
-language: str
-expected_outcome: "answer" | "clarify" | "abstain" | "refuse"
-expected_pages: list[int]          # empty unless answer
-must_include: list[str]            # key facts, including key safety warning; empty unless answer
+GoldenRecord:
+  id: str
+  question: str
+  language: str
+  expected_outcome: Outcome
+  expected_pages: list[int]        # empty unless answer
+  must_include: list[str]          # key facts, including key safety warning; empty unless answer
 ```
