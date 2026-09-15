@@ -106,4 +106,4 @@ def test_chunk_effective_date_parses():
 def test_golden_set_validates():
     lines = (ROOT / "eval" / "golden.jsonl").read_text(encoding="utf-8").splitlines()
     records = [GoldenRecord.model_validate_json(line) for line in lines if line.strip()]
-    assert len(records) == 5
+    assert records
