@@ -53,6 +53,15 @@ def test_at_most_k_and_consistent_ranking():
     assert search(query, EN, 3) == top3
 
 
+def test_results_do_not_share_state_with_index():
+    first = search("pump", EN, 1)[0]
+    first.text = "mutated"
+    first.figure_refs.append("Fig. 99")
+    again = search("pump", EN, 1)[0]
+    assert again.text != "mutated"
+    assert "Fig. 99" not in again.figure_refs
+
+
 def test_language_filter():
     assert search("pump", Filters(language="fr"), 5) == []
 

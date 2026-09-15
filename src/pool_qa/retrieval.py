@@ -47,5 +47,9 @@ def search(query: str, filters: Filters, k: int) -> list[Chunk]:
     chunks, retriever = _index(Settings().chunks_path)
     docs, scores = retriever.retrieve(_tokenize([query]), k=len(chunks), show_progress=False)
     ranked = sorted(zip(docs[0].tolist(), scores[0].tolist()), key=lambda d: (-d[1], d[0]))
-    hits = [chunks[i] for i, score in ranked if score > 0 and _matches(chunks[i], filters)]
+    hits = [
+        chunks[i].model_copy(deep=True)
+        for i, score in ranked
+        if score > 0 and _matches(chunks[i], filters)
+    ]
     return hits[:k]
