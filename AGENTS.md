@@ -16,9 +16,10 @@ Code conforms to these files. If code and a file disagree, stop and report; do n
 ## Commands
 
 ```
-uv sync                           # install
-uv run pytest                     # tests
-uv run python -m eval.run         # eval report
+uv sync                                       # install
+uv run pytest                                 # tests
+uv run python -m pool_qa.ingest.pypdf_chunks  # regenerate data/chunks.jsonl
+uv run python -m pool_qa.eval.run             # eval report
 ```
 
 Add new commands here when they are created.

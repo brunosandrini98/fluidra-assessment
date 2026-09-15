@@ -13,7 +13,7 @@ Requires Python 3.12, `uv`, and `ANTHROPIC_API_KEY` in `.env`.
 ```
 uv sync
 uv run pytest
-uv run python -m eval.run
+uv run python -m pool_qa.eval.run
 ```
 
 ## Documents

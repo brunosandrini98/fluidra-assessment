@@ -174,3 +174,9 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 **Context:** Without stemming, "priming" does not match "prime". In a page-level probe, the expected page for 2 of 3 Tier 0 answer questions ranked 2nd instead of 1st.
 **Decision:** `bm25s` tokenization with English stopwords and the `PyStemmer` English stemmer.
 **Consequences:** New dependency. Paraphrase gaps (e.g. "prime the pump" vs "fill the pump with water") remain until dense retrieval in Tier 1.
+
+## D21 — Package layout
+2026-09-15 · fixed · supersedes the eval command in D10 and D12
+
+**Decision:** `src/` layout with a single package `pool_qa`. Eval command: `uv run python -m pool_qa.eval.run`. Golden set stays at `eval/golden.jsonl`.
+**Context:** Standard packaging layout; generic top-level names (`app`, `eval`) risk import collisions.

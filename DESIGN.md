@@ -83,7 +83,7 @@ Models are config strings per agent. No provider-specific features.
 
 ## Evaluation
 
-Command: `uv run python -m eval.run`. Prints a table, writes a JSON report. Golden set: `eval/golden.jsonl`, dev-owned.
+Command: `uv run python -m pool_qa.eval.run`. Prints a table, writes a JSON report. Golden set: `eval/golden.jsonl`, dev-owned.
 
 | Gate | Method | Threshold | From tier |
 |---|---|---|---|
