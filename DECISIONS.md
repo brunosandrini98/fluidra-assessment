@@ -156,3 +156,21 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 **Context:** Fluidra targets AWS. Bedrock Managed Knowledge Bases and AgentCore would replace custom ingestion, retrieval, and agent runtime.
 **Decision:** The build runs locally with one LLM key. AWS managed services appear only in `DEPLOYMENT.md` as the production target.
 **Consequences:** They need an account, cost money, cannot be run by a reviewer, and would absorb the agent decomposition being assessed. The retriever interface (D1) keeps a managed knowledge base a substitution, not a rewrite.
+
+## D19 — Tier 0 chunking
+2026-09-15 · provisional
+
+**Context:** Tier 0 uses plain `pypdf` text with no layout. The only structure signal is heading text, whose style is specific to this manual.
+**Decision:**
+- Lines repeated on at least half the pages, or equal to the page number, are removed.
+- Chunks never span pages. A page is split where a numbered heading (number, dot, all-caps line) starts. `section` is the latest numbered heading, carried across pages.
+- Fallback: without a heading, the page is one chunk and `section` is null.
+- Chunks over 2,000 characters split at the last line break before the cap; parts keep `section`.
+**Consequences:** Heading detection fits this manual; other layouts degrade to page chunks. Replaced by Docling structure in Tier 1. Chunk quality on new document families is listed in Known limitations.
+
+## D20 — BM25 stemming
+2026-09-15 · fixed
+
+**Context:** Without stemming, "priming" does not match "prime". In a page-level probe, the expected page for 2 of 3 Tier 0 answer questions ranked 2nd instead of 1st.
+**Decision:** `bm25s` tokenization with English stopwords and the `PyStemmer` English stemmer.
+**Consequences:** New dependency. Paraphrase gaps (e.g. "prime the pump" vs "fill the pump with water") remain until dense retrieval in Tier 1.
