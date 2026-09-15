@@ -4,7 +4,7 @@ Multi-agent question answering over pool equipment documents for pool profession
 
 ## Status
 
-Tier 0 not started. See `DESIGN.md` § Tiers.
+Tier 0 in progress: contract models, chunked English pages, and BM25 search are in place; agents, API, and eval are not. See `DESIGN.md` § Tiers.
 
 ## Run
 
@@ -15,6 +15,8 @@ uv sync
 uv run pytest
 uv run python -m pool_qa.eval.run
 ```
+
+The parsed manual is committed in `data/chunks.jsonl`. Tier 0 chunking is structure-aware with fallback: pages are split at numbered section headings, pages without headings stay whole, and chunks are capped at 2,000 characters (`DECISIONS.md` D19). Regenerate with `uv run python -m pool_qa.ingest.pypdf_chunks`.
 
 ## Documents
 
