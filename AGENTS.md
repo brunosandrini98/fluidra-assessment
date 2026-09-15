@@ -43,6 +43,11 @@ Add new commands here when they are created.
 - Missing chunk metadata is empty or null, never omitted.
 - Comments only where the code cannot say it.
 
+## Commits
+
+- One commit per batch of related changes.
+- Message: `type(scope): one-line description`, e.g. `feat(retrieval): add bm25 search`. Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`. Scope optional.
+
 ## Boundaries
 
 Ask first:
