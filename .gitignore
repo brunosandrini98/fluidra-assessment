@@ -1,0 +1,6 @@
+data/*
+!data/user_manual.pdf
+docs/
+.env
+.venv/
+__pycache__/
