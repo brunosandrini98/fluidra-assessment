@@ -149,3 +149,10 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 - Errors: LLM call timeout; retry with exponential backoff on 429, 5xx, connection errors; per-request deadline. HTTP 422 invalid request, 502 provider failure, 504 deadline.
 - Server uses the first user turn plus the last N turns of history, N = 5 by default. Rolling summary is Later.
 **Context:** PDF page indices open directly in viewers; static refusals cannot hallucinate; provider failures are not evidence outcomes.
+
+## D18 — No managed AWS services in the build
+2026-09-15 · fixed
+
+**Context:** Fluidra targets AWS. Bedrock Managed Knowledge Bases and AgentCore would replace custom ingestion, retrieval, and agent runtime.
+**Decision:** The build runs locally with one LLM key. AWS managed services appear only in `DEPLOYMENT.md` as the production target.
+**Consequences:** They need an account, cost money, cannot be run by a reviewer, and would absorb the agent decomposition being assessed. The retriever interface (D1) keeps a managed knowledge base a substitution, not a rewrite.
