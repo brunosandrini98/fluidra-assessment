@@ -72,3 +72,14 @@ def test_provider_error_and_timeout(capsys):
     assert ErrorResponse.model_validate_json(capsys.readouterr().out).error == "provider_error"
     assert main(["q"], ask=raising(RequestTimeout("slow"))) == 1
     assert ErrorResponse.model_validate_json(capsys.readouterr().out).error == "timeout"
+
+
+def test_setup_error_has_no_traceback(monkeypatch, capsys):
+    def broken(settings):
+        raise RuntimeError("missing API key")
+
+    monkeypatch.setattr("pool_qa.cli.default_agents", broken)
+    assert main(["q"]) == 1
+    captured = capsys.readouterr()
+    assert "Traceback" not in captured.err
+    assert "Traceback" not in captured.out

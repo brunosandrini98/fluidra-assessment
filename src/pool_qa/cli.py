@@ -42,10 +42,10 @@ def main(argv: list[str] | None = None, ask=None) -> int:
     except (OSError, json.JSONDecodeError, ValidationError) as exc:
         return _error("invalid_request", str(exc), 2)
 
-    if ask is None:
-        settings = Settings()
-        ask = make_ask(default_agents(settings), settings)
     try:
+        if ask is None:
+            settings = Settings()
+            ask = make_ask(default_agents(settings), settings)
         response = asyncio.run(ask(request))
     except ProviderError as exc:
         return _error("provider_error", str(exc), 1)
