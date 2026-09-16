@@ -4,7 +4,7 @@ Multi-agent question answering over pool equipment documents for pool profession
 
 ## Status
 
-Tier 0 in progress: contract models, chunked English pages, BM25 search, the three-agent graph, `POST /ask`, the CLI, and the eval command are in place. Latest eval (2026-09-16): Tier 0 fail — one question ended in a provider error (malformed Researcher output). See `DESIGN.md` § Tiers.
+Tier 0 complete: contract models, chunked English pages with hand transcriptions, BM25 search, the three-agent graph, `POST /ask`, the CLI, and the eval command. Latest eval (2026-09-16, one run per question): Tier 0 pass — 5/5 outcomes, citations valid, cited pages in expected pages. See `DESIGN.md` § Tiers.
 
 ## Run
 
