@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -60,4 +61,6 @@ def main(argv: list[str] | None = None, ask=None) -> int:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format="%(message)s")
+    logging.getLogger("pool_qa").setLevel(logging.INFO)
     sys.exit(main())

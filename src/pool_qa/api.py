@@ -1,3 +1,4 @@
+import logging
 from functools import cache
 
 from fastapi import Depends, FastAPI, Request
@@ -8,6 +9,9 @@ from pool_qa.contract import AskRequest, AskResponse, ErrorResponse
 from pool_qa.graph import RequestTimeout, default_agents, make_ask
 from pool_qa.llm import ProviderError
 from pool_qa.settings import Settings
+
+logging.basicConfig(format="%(message)s")
+logging.getLogger("pool_qa").setLevel(logging.INFO)
 
 app = FastAPI(title="Pool equipment QA")
 

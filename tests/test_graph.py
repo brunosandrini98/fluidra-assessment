@@ -1,4 +1,6 @@
 import asyncio
+import json
+import logging
 
 import pytest
 
@@ -135,8 +137,30 @@ def test_a10_verifier_abstain():
 def test_a11_researcher_changes_course_after_revision(second):
     s = Script(research=[GOOD, second], verdicts=[verdict("revise")])
     r = ask(s)
-    assert (r.outcome, r.message, trace(r)) == (second.outcome, second.message, (4, 1, "revise"))
+    assert (r.outcome, r.message, trace(r)) == (second.outcome, second.message, (4, 1, None))
     assert len(s.verifier_calls) == 1
+
+
+def test_verifier_revise_then_citation_check_fails_clears_verdict():
+    s = Script(research=[GOOD, BAD], verdicts=[verdict("revise")])
+    r = ask(s)
+    assert (r.outcome, r.message, trace(r)) == ("abstain", abstention("es"), (4, 1, None))
+    assert len(s.verifier_calls) == 1
+
+
+def test_logs_one_line_per_node(caplog):
+    caplog.set_level(logging.INFO, logger="pool_qa.graph")
+    ask(Script(research=[BAD, GOOD], verdicts=[verdict("pass")]))
+    lines = [json.loads(rec.message) for rec in caplog.records]
+    assert [line["node"] for line in lines] == [
+        "intake", "researcher", "check", "revise", "researcher", "check", "verifier", "build",
+    ]
+    assert len({line["request_id"] for line in lines}) == 1
+    assert lines[1] | {"ms": 0} == {
+        "request_id": lines[0]["request_id"], "node": "researcher", "ms": 0,
+        "outcome": "answer", "citations": 1, "search_calls": 2, "tokens": {},
+    }
+    assert lines[2]["issues"] and lines[6]["verdict"] == "pass" and lines[7]["outcome"] == "answer"
 
 
 def test_a18_history_truncated_for_intake_and_researcher():

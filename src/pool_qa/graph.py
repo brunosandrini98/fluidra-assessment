@@ -1,8 +1,14 @@
 import asyncio
+import inspect
+import json
+import logging
+import time
+import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypedDict
 
+from langchain_core.callbacks import get_usage_metadata_callback
 from langgraph.graph import END, START, StateGraph
 
 from pool_qa import retrieval
@@ -17,6 +23,8 @@ from pool_qa.llm import chat_model
 from pool_qa.response import build_response
 from pool_qa.settings import Settings
 
+logger = logging.getLogger(__name__)
+
 
 class RequestTimeout(Exception):
     """Request deadline exceeded."""
@@ -30,6 +38,7 @@ class Agents:
 
 
 class State(TypedDict):
+    request_id: str
     question: str
     history: list[Turn]
     intake: IntakeResult | None
@@ -64,7 +73,7 @@ def build_graph(agents: Agents):
         return {"verifier": result, "issues": result.issues}
 
     def revise(s: State) -> dict:
-        return {"revisions": 1}
+        return {"revisions": 1, "verifier": None}
 
     def build(s: State) -> dict:
         return {"response": build_response(
@@ -90,7 +99,7 @@ def build_graph(agents: Agents):
         ("intake", intake), ("researcher", researcher), ("check", check),
         ("verifier", verifier), ("revise", revise), ("build", build),
     ]:
-        graph.add_node(name, node)
+        graph.add_node(name, logged(name, node))
     graph.add_edge(START, "intake")
     graph.add_conditional_edges("intake", after_intake, ["researcher", "build"])
     graph.add_conditional_edges("researcher", after_researcher, ["check", "build"])
@@ -101,12 +110,50 @@ def build_graph(agents: Agents):
     return graph.compile()
 
 
+def summary(s: State, update: dict) -> dict:
+    out: dict = {}
+    if intake := update.get("intake"):
+        out |= {"decision": intake.decision, "language": intake.language}
+    if research := update.get("research"):
+        out |= {
+            "outcome": research.outcome, "citations": len(research.citations),
+            "search_calls": update["search_calls"] - s["search_calls"],
+        }
+    if "issues" in update:
+        out["issues"] = update["issues"]
+    if verifier := update.get("verifier"):
+        out["verdict"] = verifier.verdict
+    if response := update.get("response"):
+        out["outcome"] = response.outcome
+    return out
+
+
+def logged(name: str, node: Callable) -> Callable:
+    async def run(s: State) -> dict:
+        start = time.perf_counter()
+        with get_usage_metadata_callback() as usage:
+            update = node(s)
+            if inspect.isawaitable(update):
+                update = await update
+        tokens = {
+            model: {"input": u["input_tokens"], "output": u["output_tokens"]}
+            for model, u in usage.usage_metadata.items()
+        }
+        logger.info(json.dumps({
+            "request_id": s["request_id"], "node": name,
+            "ms": round((time.perf_counter() - start) * 1000), **summary(s, update), "tokens": tokens,
+        }, ensure_ascii=False))
+        return update
+
+    return run
+
+
 def make_ask(agents: Agents, settings: Settings) -> Callable[[AskRequest], Awaitable[AskResponse]]:
     graph = build_graph(agents)
 
     async def ask(request: AskRequest) -> AskResponse:
         state: State = {
-            "question": request.question,
+            "request_id": uuid.uuid4().hex[:8], "question": request.question,
             "history": truncate_history(request.history, settings.history_turns),
             "intake": None, "research": None, "verifier": None, "retrieved": {},
             "issues": [], "revisions": 0, "search_calls": 0, "response": None,
