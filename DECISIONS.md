@@ -180,3 +180,26 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 
 **Decision:** `src/` layout with a single package `pool_qa`. Eval command: `uv run python -m pool_qa.eval.run`. Golden set stays at `eval/golden.jsonl`.
 **Context:** Standard packaging layout; generic top-level names (`app`, `eval`) risk import collisions.
+
+## D22 — Whitespace-normalised quote check
+2026-09-16 · provisional
+
+**Context:** `pypdf` chunk text keeps PDF line breaks, so correct quotes fail an exact substring match.
+**Decision:** The quote check collapses whitespace runs to single spaces in quote and chunk text before matching. Hyphenated line splits (`con -\nnected`) are not repaired and fail the check.
+**Consequences:** Remove when ingestion joins wrapped lines (Tier 1).
+
+## D23 — Static abstention phrase
+2026-09-16 · fixed · extends D17
+
+**Decision:** When `abstain` comes from a failed check or Verifier, `message` is a static phrase per language; a Researcher `abstain` keeps its own reason. Static refusal and abstention phrases cover the manual's 9 languages (en, fr, es, it, de, pt, el, ru, ar), English fallback.
+**Consequences:** Non-English phrases are unverified translations.
+
+## D24 — Tier 0 agent runtime
+2026-09-16 · provisional
+
+**Decision:**
+- Researcher loop: `search` and `submit` tools; `submit` forced at the step cap.
+- Limits: `search_k=5`, `max_search_calls=3`, `llm_timeout_s=60`, `llm_max_retries=2`, `request_deadline_s=180`.
+- Malformed structured output: one retry, then 502.
+- Async graph so the deadline cancels in-flight calls.
+- `langchain` for `init_chat_model`; `httpx` dev-only.

@@ -15,3 +15,8 @@ class Settings(BaseSettings):
     history_turns: int = 5
     pivot_language: str = "en"
     chunks_path: Path = ROOT / "data" / "chunks.jsonl"
+    search_k: int = 5
+    max_search_calls: int = 3
+    llm_timeout_s: float = 60
+    llm_max_retries: int = 2
+    request_deadline_s: float = 180

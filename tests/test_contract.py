@@ -107,3 +107,13 @@ def test_golden_set_validates():
     lines = (ROOT / "eval" / "golden.jsonl").read_text(encoding="utf-8").splitlines()
     records = [GoldenRecord.model_validate_json(line) for line in lines if line.strip()]
     assert records
+
+
+@pytest.mark.parametrize("question", [" ", "\n\t  "])
+def test_blank_question_rejected(question):
+    with pytest.raises(ValidationError):
+        AskRequest(question=question)
+
+
+def test_question_kept_verbatim():
+    assert AskRequest(question=" How? ").question == " How? "

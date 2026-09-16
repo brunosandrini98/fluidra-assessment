@@ -113,6 +113,8 @@ Simplifications built into this design, and what changes at scale.
 | Safety warnings not structured; covered by Researcher prompt and `must_include` only | Warnings as structured source data linked to procedures, attached in code and gated in eval |
 | In-memory vector array | Managed vector store (e.g. OpenSearch, Bedrock Knowledge Base) behind the same `search` interface |
 | No prompt-injection defences; client-held history can be forged (e.g. fake assistant turns bypass the clarification cap) | Input guardrails; server-side or signed history |
+| Search cap applies per Researcher run; a revision can bring a request to 6 searches | Search budget per request, shared across revisions |
+| Revision sees only the issues, not the rejected draft or its retrieved chunks | Revision receives the rejected draft and its chunks |
 | Verifier and eval judge share model family with the Researcher | Different-family judge; periodic human labelling |
 | Stateless server: no sessions, no audit trail | Server-side sessions with persisted traces |
 | Chunking validated on one manual only | Chunk quality checked per new document family before indexing |
@@ -121,7 +123,7 @@ Simplifications built into this design, and what changes at scale.
 
 ## Stack
 
-Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`.
+Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev).
 
 ## Deliverables
 
