@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 Outcome = Literal["answer", "clarify", "abstain", "refuse"]
 
@@ -15,6 +15,13 @@ class Turn(BaseModel):
 class AskRequest(BaseModel):
     question: str = Field(min_length=1)
     history: list[Turn] = []
+
+    @field_validator("question")
+    @classmethod
+    def _not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("question must not be blank")
+        return value
 
 
 class Citation(BaseModel):
