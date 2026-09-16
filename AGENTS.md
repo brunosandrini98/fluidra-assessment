@@ -19,6 +19,8 @@ Code conforms to these files. If code and a file disagree, stop and report; do n
 uv sync                                       # install
 uv run pytest                                 # tests
 uv run python -m pool_qa.ingest.pypdf_chunks  # regenerate data/chunks.jsonl
+uv run python -m pool_qa.cli "question"       # ask from the CLI (--json, --history FILE)
+uv run uvicorn pool_qa.api:app                # serve POST /ask on :8000
 uv run python -m pool_qa.eval.run             # eval report
 ```
 
