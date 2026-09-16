@@ -218,3 +218,10 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 
 **Decision:** `ruff` (dev) for lint and format: line length 120, default rules plus import sorting. GitHub Actions runs `ruff check`, `ruff format --check` and `pytest` on every push and pull request.
 **Consequences:** Style and tests are checked on every change without relying on a manual run.
+
+## D27 — Hand transcriptions for content missing from the text
+2026-09-16 · provisional
+
+**Context:** `pypdf` drops the ● markers of the page 13 troubleshooting matrix, so causes cannot be tied to symptoms. Fig. 4 (page 94) and the installation zones (page 97) hold facts that appear nowhere in the text.
+**Decision:** These are transcribed by hand from the page images into `data/transcriptions.jsonl`: one chunk per troubleshooting symptom, one chunk per figure page. Ingestion replaces the `pypdf` chunks of any transcribed page. Figures the text already covers, and the wiring diagrams, are not transcribed, so no unchecked transcription is cited as the manual.
+**Consequences:** Citation quotes for these chunks come from the transcription, not the PDF text layer. Does not scale; the production equivalent is layout-aware parsing (Docling) or VLM figure descriptions, checked per document family.

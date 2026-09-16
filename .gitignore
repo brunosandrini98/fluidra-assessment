@@ -4,4 +4,5 @@ data/*
 .venv/
 __pycache__/
 !data/chunks.jsonl
+!data/transcriptions.jsonl
 eval/reports/

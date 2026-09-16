@@ -5,9 +5,11 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from pool_qa.contract import Chunk
+from pool_qa.retrieval import load_chunks
 from pool_qa.settings import ROOT, Settings
 
 PDF_PATH = ROOT / "data" / "user_manual.pdf"
+TRANSCRIPTIONS_PATH = ROOT / "data" / "transcriptions.jsonl"
 DOCUMENT = "user_manual.pdf"
 ENGLISH_PAGES = range(5, 14)
 MAX_CHARS = 2000
@@ -77,6 +79,13 @@ def build_chunks(pages: dict[int, list[str]]) -> list[Chunk]:
     return chunks
 
 
+def ingest() -> list[Chunk]:
+    transcribed = load_chunks(TRANSCRIPTIONS_PATH)
+    replaced = {c.page for c in transcribed}
+    kept = [c for c in build_chunks(read_pages()) if c.page not in replaced]
+    return sorted(kept + transcribed, key=lambda c: c.page)
+
+
 def read_pages(pdf_path: Path = PDF_PATH) -> dict[int, list[str]]:
     reader = PdfReader(pdf_path)
     return {
@@ -90,7 +99,7 @@ def render(chunks: list[Chunk]) -> str:
 
 def main() -> None:
     path = Settings().chunks_path
-    path.write_text(render(build_chunks(read_pages())), encoding="utf-8")
+    path.write_text(render(ingest()), encoding="utf-8")
     print(f"wrote {path}")
 
 

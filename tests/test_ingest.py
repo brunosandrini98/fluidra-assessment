@@ -1,9 +1,8 @@
 from pool_qa.contract import Chunk
 from pool_qa.ingest.pypdf_chunks import (
-    build_chunks,
     cap,
     figure_refs,
-    read_pages,
+    ingest,
     render,
     split_sections,
     strip_furniture,
@@ -74,7 +73,7 @@ def test_committed_chunks_valid():
     chunks = committed()
     assert chunks
     assert len({c.chunk_id for c in chunks}) == len(chunks)
-    assert {c.page for c in chunks} == set(range(5, 14))
+    assert {c.page for c in chunks} == set(range(5, 14)) | {94, 97}
     for c in chunks:
         assert c.language == "en"
         assert c.source_type == "manual"
@@ -87,11 +86,33 @@ def test_committed_chunks_valid():
 
 def test_ingestion_reproduces_committed_file():
     expected = Settings().chunks_path.read_text(encoding="utf-8")
-    assert render(build_chunks(read_pages())) == expected
+    assert render(ingest()) == expected
+
+
+def test_transcribed_page_replaces_pypdf_chunks():
+    page13 = [c for c in ingest() if c.page == 13]
+    assert [c.chunk_id for c in page13] == [f"user_manual-p13-{i}" for i in range(1, 7)]
+    assert all(c.text.startswith("7. TROUBLESHOOTING\nSymptom ") for c in page13)
+
+
+def test_troubleshooting_symptom_1_causes():
+    chunk = next(c for c in committed() if c.chunk_id == "user_manual-p13-1")
+    causes = [
+        line.removeprefix("Cause: ").split(". Solution:")[0]
+        for line in chunk.text.splitlines()
+        if line.startswith("Cause: ")
+    ]
+    assert causes == [
+        "Air entering the suction pipe",
+        "Filter cap badly sealed",
+        "Motor turning in wrong direction",
+        "Wrong voltage",
+    ]
 
 
 def test_figure_refs_on_committed_chunks():
     for c in committed():
+        assert c.figure_refs == figure_refs(c.text)
         if "(Fig. 5)" in c.text:
             assert "Fig. 5" in c.figure_refs
         if "(Fig." not in c.text:

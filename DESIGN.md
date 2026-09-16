@@ -55,7 +55,7 @@ Models are config strings per agent. No provider-specific features.
 
 ## Ingestion
 
-- Tier 0: `pypdf` text of the English section, chunked by page, split at numbered headings, page fallback and size cap (D19). `figure_refs` from "(Fig. N)" regex; `section` from heading patterns.
+- Tier 0: `pypdf` text of the English section, chunked by page, split at numbered headings, page fallback and size cap (D19). `figure_refs` from "(Fig. N)" regex; `section` from heading patterns. Hand transcriptions (`data/transcriptions.jsonl`) replace pages whose content the text loses (D27).
 - Tier 1: Docling. Tables keep row/column semantics inside chunks. Figure references attach to chunks. Exact representation fixed after a Docling spike.
 - Parsed output is committed; the app runs without running ingestion.
 - Every chunk carries all metadata fields, empty or null when unknown. `warning_ids` stays empty until structured safety warnings are implemented.
