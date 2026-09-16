@@ -18,6 +18,20 @@ def citation(**overrides) -> Citation:
     return Citation(**(fields | overrides))
 
 
+def answer_on(page: int) -> AskResponse:
+    chunk = next(c for c in CHUNKS.values() if c.page == page)
+    return response(
+        citations=[
+            citation(
+                chunk_id=chunk.chunk_id,
+                page=page,
+                section=chunk.section,
+                quote=chunk.text.splitlines()[0][:200],
+            )
+        ]
+    )
+
+
 def response(
     outcome: str = "answer", message: str | None = None, citations: list[Citation] | None = None
 ) -> AskResponse:

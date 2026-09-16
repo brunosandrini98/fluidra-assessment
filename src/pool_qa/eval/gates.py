@@ -9,11 +9,11 @@ from pool_qa.contract import AskResponse, Chunk, Outcome
 COMPLETED = "Completed end to end"
 FALSE_ANSWERS = "Answered where abstain/refuse expected"
 CITATIONS = "Citation IDs valid"
+OUTCOMES = "Outcome matches expected"
+CITED_PAGES = "Citation page in expected_pages"
 
 PENDING = [
-    ("Outcome matches expected", 1, "≥ 13/14"),
     ("Retrieval recall@k on expected_pages", 1, "≥ 90%"),
-    ("Citation page in expected_pages", 1, "≥ 90%"),
     ("Answer language matches question", 1, "100%"),
     ("Unsupported claims (LLM judge)", 1, "0"),
     ("must_include coverage (LLM judge)", 1, "≥ 90%"),
@@ -29,6 +29,7 @@ class ErrorInfo(BaseModel):
 class QuestionResult(BaseModel):
     id: str
     expected_outcome: Outcome
+    expected_pages: list[int]
     response: AskResponse | None
     error: ErrorInfo | None
 
@@ -45,7 +46,6 @@ class GateResult(BaseModel):
 class Report(BaseModel):
     created_at: datetime
     tier0: Literal["pass", "fail"]
-    outcome_match: str
     results: list[QuestionResult]
     gates: list[GateResult]
 
@@ -93,6 +93,19 @@ def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> li
     ]
     citation_failures = {r.id: citation_issues(r.response, chunks) for r in done}
     valid = sum(1 for issues in citation_failures.values() if not issues)
+    outcome_failures = [
+        f"{r.id}: expected {r.expected_outcome}, got {r.response.outcome if r.response else r.error.type}"
+        for r in results
+        if r.response is None or r.response.outcome != r.expected_outcome
+    ]
+    hits = len(results) - len(outcome_failures)
+    answers = [r for r in done if r.expected_outcome == "answer" and r.response.outcome == "answer"]
+    page_failures = [
+        f"{r.id}: cited pages {sorted({c.page for c in r.response.citations})}, expected {r.expected_pages}"
+        for r in answers
+        if not {c.page for c in r.response.citations} & set(r.expected_pages)
+    ]
+    cited = len(answers) - len(page_failures)
     return [
         _gate(COMPLETED, "100%", f"{len(done)}/{len(results)}", errors),
         _gate(FALSE_ANSWERS, "0", str(len(false_answers)), false_answers),
@@ -102,14 +115,25 @@ def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> li
             f"{valid}/{len(done)}",
             [f"{rid}: {issue}" for rid, issues in citation_failures.items() for issue in issues],
         ),
+        GateResult(
+            name=OUTCOMES,
+            tier=0,
+            threshold="≥ 13/14",
+            value=f"{hits}/{len(results)}",
+            status="pass" if hits * 14 >= 13 * len(results) else "fail",
+            failures=outcome_failures,
+        ),
+        GateResult(
+            name=CITED_PAGES,
+            tier=0,
+            threshold="≥ 90%",
+            value=f"{cited}/{len(answers)}",
+            status="pass" if cited * 10 >= 9 * len(answers) else "fail",
+            failures=page_failures,
+        ),
         *(GateResult(name=n, tier=t, threshold=th, value=None, status="pending") for n, t, th in PENDING),
     ]
 
 
 def tier0_status(gates: list[GateResult]) -> Literal["pass", "fail"]:
     return "pass" if all(g.status == "pass" for g in gates if g.tier == 0) else "fail"
-
-
-def outcome_match(results: list[QuestionResult]) -> str:
-    hits = sum(1 for r in results if r.response is not None and r.response.outcome == r.expected_outcome)
-    return f"{hits}/{len(results)}"

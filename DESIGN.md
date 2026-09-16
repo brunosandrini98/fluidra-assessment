@@ -14,7 +14,7 @@ Interfaces and schemas are final at Tier 0. Later tiers change implementations o
 
 | Tier | Contents | Exit |
 |---|---|---|
-| 0 | Crude text extraction of English pages (`pypdf`); BM25 inside `search()`; 3 agents with revision cap; `POST /ask` and CLI; 5 golden questions and eval command; draft deployment doc; README | End-to-end on 5 questions; 0 answers where abstain/refuse expected; citation IDs valid |
+| 0 | Crude text extraction of English pages (`pypdf`); BM25 inside `search()`; 3 agents with revision cap; `POST /ask` and CLI; 5 golden questions and eval command; draft deployment doc; README | End-to-end on 5 questions; 0 answers where abstain/refuse expected; citation IDs valid; outcomes match; cited pages in `expected_pages` |
 | 1 | Docling ingestion (tables, sections); hybrid retrieval; 14 golden questions | All evaluation gates pass |
 | 2 | Judge validation; per-language page mapping; clarification cap enforced; deployment doc final | Judge–human agreement reported |
 | Later | Cross-encoder reranker; Langfuse tracing; VLM figure descriptions; 25-question golden set; single-agent baseline; LangGraph checkpointer; structured safety warnings; rolling history summary | — |
@@ -87,11 +87,12 @@ Command: `uv run python -m pool_qa.eval.run`. Prints a table, writes a JSON repo
 
 | Gate | Method | Threshold | From tier |
 |---|---|---|---|
-| Outcome matches expected | code | ≥ 13/14 | 1 |
+| Completed end to end | code | 100% | 0 |
+| Outcome matches expected | code | ≥ 13/14 | 0 |
 | Answered where abstain/refuse expected | code | 0 | 0 |
 | Citation IDs valid | code | 100% | 0 |
 | Retrieval recall@k on `expected_pages` | code | ≥ 90% | 1 |
-| Citation page in `expected_pages` | code | ≥ 90% | 1 |
+| Citation page in `expected_pages` | code | ≥ 90% | 0 |
 | Answer language matches question | code | 100% | 1 |
 | Unsupported claims (claim counts) | LLM judge | 0 | 1 |
 | `must_include` coverage | LLM judge | ≥ 90% | 1 |

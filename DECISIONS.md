@@ -247,3 +247,13 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 **Context:** In an eval run the Researcher abstained in Italian on an English question although Intake detected `en`.
 **Decision:** Every `abstain`, including one from the Researcher, returns the static abstention phrase in the Intake language. `clarify` keeps the Researcher's text.
 **Consequences:** Abstain messages are always in the detected language; the Researcher's specific reason is not returned.
+
+## D31 — Outcome and cited-page gates from Tier 0
+2026-09-16 · fixed · extends D25
+
+**Context:** With outcome match informational, a system that abstains on every question passes all Tier 0 gates.
+**Decision:**
+- `Outcome matches expected` is a Tier 0 gate: matches ≥ 13/14 of the golden set, so 5/5 with 5 questions. Errors count as mismatches.
+- `Citation page in expected_pages` is a Tier 0 gate: ≥ 90% of answer questions answered with at least one citation on an expected page.
+- The informational outcome line is removed.
+**Consequences:** An always-abstain system fails Tier 0. With 5 questions and one run per question, one nondeterministic miss fails the gate.

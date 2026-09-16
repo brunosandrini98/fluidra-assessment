@@ -10,7 +10,6 @@ from pool_qa.eval.gates import (
     QuestionResult,
     Report,
     compute_gates,
-    outcome_match,
     tier0_status,
 )
 from pool_qa.graph import RequestTimeout, default_agents, make_ask
@@ -44,6 +43,7 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
             QuestionResult(
                 id=record.id,
                 expected_outcome=record.expected_outcome,
+                expected_pages=record.expected_pages,
                 response=response,
                 error=error,
             )
@@ -56,7 +56,7 @@ def render(report: Report) -> str:
     for r in report.results:
         actual, detail = (r.response.outcome, len(r.response.citations)) if r.response else ("error", r.error.type)
         lines.append(f"{r.id:<8}{r.expected_outcome:<10}{actual:<10}{detail}")
-    lines += ["", f"Outcome match: {report.outcome_match} (informational)", ""]
+    lines.append("")
     lines.append(f"{'gate':<42}{'tier':<6}{'threshold':<11}{'value':<8}status")
     for g in report.gates:
         lines.append(f"{g.name:<42}{g.tier:<6}{g.threshold:<11}{g.value or '-':<8}{g.status}")
@@ -88,7 +88,6 @@ def main(argv: list[str] | None = None, ask=None) -> int:
     report = Report(
         created_at=datetime.now(UTC),
         tier0=tier0_status(gates),
-        outcome_match=outcome_match(results),
         results=results,
         gates=gates,
     )

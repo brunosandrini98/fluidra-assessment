@@ -2,8 +2,8 @@ import re
 
 import pytest
 
-from eval_stubs import CHUNKS, response
-from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, Report, compute_gates
+from eval_stubs import CHUNKS, answer_on, response
+from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, OUTCOMES, Report, compute_gates
 from pool_qa.eval.run import GOLDEN, load_golden, main
 from pool_qa.graph import RequestTimeout
 from pool_qa.llm import ProviderError
@@ -21,6 +21,8 @@ def stub(overrides=None):
         out = overrides.get(record.id, record.expected_outcome)
         if isinstance(out, Exception):
             raise out
+        if out == "answer" and record.expected_pages:
+            return answer_on(record.expected_pages[0])
         return response(out)
 
     return ask
@@ -72,7 +74,7 @@ def test_table(tmp_path, capsys):  # D9
         "expected",
         "actual",
         "provider_error",
-        "Outcome match: 4/5",
+        OUTCOMES,
         COMPLETED,
         CITATIONS,
         "pending",
@@ -92,6 +94,12 @@ def test_report_file(tmp_path, capsys):  # D10
 def test_gates_recompute_from_saved_report(tmp_path):  # D11
     _, report, _ = run(tmp_path, stub({"t0-04": "answer", "t0-02": ProviderError("down")}))
     assert compute_gates(report.results, CHUNKS) == report.gates
+
+
+def test_always_abstain_fails_tier0(tmp_path):
+    code, report, _ = run(tmp_path, stub({r.id: "abstain" for r in RECORDS}))
+    assert code == 1 and report.tier0 == "fail"
+    assert gate(report, OUTCOMES).status == "fail"
 
 
 def test_setup_error_returns_2_without_report(tmp_path, monkeypatch, capsys):
