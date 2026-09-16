@@ -41,7 +41,7 @@ flowchart LR
 - Citation check and response builder are code, not agents.
 - The server is stateless. The client sends history; the server uses the first user turn plus the last 5 turns.
 - Refusal messages are static phrases per language, English fallback.
-- LLM calls have a timeout and retry with exponential backoff on rate limit, server, and connection errors; each request has an overall deadline. Provider failures return HTTP errors, not an outcome.
+- LLM calls have a timeout and retry with exponential backoff on rate limit, server, and connection errors; each request has an overall deadline. Provider failures return HTTP errors, not an outcome. Malformed model output after one retry ends as `abstain` (D29).
 
 ## Agents
 
@@ -124,7 +124,7 @@ Simplifications built into this design, and what changes at scale.
 
 ## Stack
 
-Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev), `ruff` (dev).
+Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev), `ruff` (dev).
 
 ## Deliverables
 

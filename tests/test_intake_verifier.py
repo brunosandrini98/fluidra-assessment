@@ -7,7 +7,7 @@ from fakes import FakeStructuredModel, make_chunk
 from pool_qa.agents.intake import intake_messages, run_intake
 from pool_qa.agents.verifier import run_verifier, verifier_messages
 from pool_qa.contract import IntakeResult, Turn, VerifierResult
-from pool_qa.llm import ProviderError
+from pool_qa.llm import MalformedOutput
 
 CHUNK = make_chunk("user_manual-p12-1", "Replace the mechanical seal every year.")
 
@@ -43,7 +43,7 @@ def test_verifier_receives_full_chunk_text_and_no_history():
 def test_verifier_revise_without_issues_is_malformed():
     bad = VerifierResult(verdict="revise", claims=[], issues=[])
     model = FakeStructuredModel([bad, bad])
-    with pytest.raises(ProviderError):
+    with pytest.raises(MalformedOutput):
         asyncio.run(run_verifier(model, "en", "q", "en", "d", [CHUNK]))
 
 

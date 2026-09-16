@@ -25,8 +25,8 @@ from pool_qa.contract import (
     Turn,
     VerifierResult,
 )
-from pool_qa.llm import chat_model
-from pool_qa.response import build_response
+from pool_qa.llm import MalformedOutput, chat_model
+from pool_qa.response import abstain_response, build_response
 from pool_qa.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -54,15 +54,22 @@ class State(TypedDict):
     issues: list[str]
     revisions: int
     search_calls: int
+    malformed: bool
     response: AskResponse | None
 
 
 def build_graph(agents: Agents):
     async def intake(s: State) -> dict:
-        return {"intake": await agents.intake(s["question"], s["history"])}
+        try:
+            return {"intake": await agents.intake(s["question"], s["history"])}
+        except MalformedOutput:
+            return {"malformed": True}
 
     async def researcher(s: State) -> dict:
-        run = await agents.researcher(s["question"], s["history"], s["intake"], s["issues"])
+        try:
+            run = await agents.researcher(s["question"], s["history"], s["intake"], s["issues"])
+        except MalformedOutput:
+            return {"malformed": True}
         return {
             "research": run.result,
             "search_calls": s["search_calls"] + run.search_calls,
@@ -75,13 +82,21 @@ def build_graph(agents: Agents):
     async def verifier(s: State) -> dict:
         research = s["research"]
         chunks = [s["retrieved"][c.chunk_id] for c in research.citations]
-        result = enforce_claims(await agents.verifier(s["question"], s["intake"].language, research.message, chunks))
+        try:
+            result = enforce_claims(
+                await agents.verifier(s["question"], s["intake"].language, research.message, chunks)
+            )
+        except MalformedOutput:
+            return {"malformed": True}
         return {"verifier": result, "issues": result.issues}
 
     def revise(s: State) -> dict:
         return {"revisions": 1, "verifier": None}
 
     def build(s: State) -> dict:
+        if s["malformed"]:
+            language = s["intake"].language if s["intake"] else "en"
+            return {"response": abstain_response(language, s["revisions"], s["search_calls"])}
         return {
             "response": build_response(
                 s["intake"], s["research"], s["verifier"], s["retrieved"], s["revisions"], s["search_calls"]
@@ -89,9 +104,13 @@ def build_graph(agents: Agents):
         }
 
     def after_intake(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "researcher" if s["intake"].decision == "proceed" else "build"
 
     def after_researcher(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "check" if s["research"].outcome == "answer" else "build"
 
     def after_check(s: State) -> str:
@@ -100,6 +119,8 @@ def build_graph(agents: Agents):
         return "revise" if s["revisions"] == 0 else "build"
 
     def after_verifier(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "revise" if s["verifier"].verdict == "revise" and s["revisions"] == 0 else "build"
 
     graph = StateGraph(State)
@@ -138,6 +159,8 @@ def summary(s: State, update: dict) -> dict:
         out["verdict"] = verifier.verdict
     if response := update.get("response"):
         out["outcome"] = response.outcome
+    if update.get("malformed"):
+        out["malformed"] = True
     return out
 
 
@@ -184,6 +207,7 @@ def make_ask(agents: Agents, settings: Settings) -> Callable[[AskRequest], Await
             "issues": [],
             "revisions": 0,
             "search_calls": 0,
+            "malformed": False,
             "response": None,
         }
         try:

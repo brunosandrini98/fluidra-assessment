@@ -1,13 +1,16 @@
 import asyncio
 
+import anthropic
+import httpx
 import pytest
 
 from fakes import FakeStructuredModel
 from pool_qa.contract import IntakeResult
-from pool_qa.llm import ProviderError, chat_model, structured
+from pool_qa.llm import MalformedOutput, ProviderError, chat_model, structured
 from pool_qa.settings import Settings
 
 INTAKE = IntakeResult(decision="proceed", language="en", retrieval_query="prime pump")
+API_ERROR = anthropic.APIConnectionError(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"))
 
 
 def test_chat_model_built_from_config_string(monkeypatch):
@@ -33,17 +36,23 @@ def test_structured_retries_once_on_malformed_output():
 
 def test_structured_raises_after_second_malformed_output():
     model = FakeStructuredModel([None, None])
-    with pytest.raises(ProviderError):
+    with pytest.raises(MalformedOutput):
         asyncio.run(structured(model, IntakeResult, ["m"]))
 
 
 def test_structured_invalid_by_predicate_counts_as_malformed():
     model = FakeStructuredModel([INTAKE, INTAKE])
-    with pytest.raises(ProviderError):
+    with pytest.raises(MalformedOutput):
         asyncio.run(structured(model, IntakeResult, ["m"], valid=lambda r: False))
 
 
-def test_provider_exception_wrapped():
-    model = FakeStructuredModel([RuntimeError("503 overloaded")])
+def test_api_error_wrapped():
+    model = FakeStructuredModel([API_ERROR])
     with pytest.raises(ProviderError):
+        asyncio.run(structured(model, IntakeResult, ["m"]))
+
+
+def test_other_exceptions_propagate():
+    model = FakeStructuredModel([RuntimeError("bug")])
+    with pytest.raises(RuntimeError):
         asyncio.run(structured(model, IntakeResult, ["m"]))

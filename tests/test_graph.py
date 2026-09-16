@@ -9,6 +9,7 @@ from invariants import assert_invariants
 from pool_qa.agents.researcher import ResearchRun
 from pool_qa.contract import AskRequest, Claim, DraftCitation, IntakeResult, ResearchResult, Turn, VerifierResult
 from pool_qa.graph import Agents, RequestTimeout, make_ask
+from pool_qa.llm import MalformedOutput
 from pool_qa.phrases import abstention, refusal
 from pool_qa.settings import Settings
 
@@ -216,3 +217,19 @@ def test_verifier_pass_with_unsupported_claim_revises_then_abstains():
     r = ask(s)
     assert (r.outcome, r.message, trace(r)) == ("abstain", abstention("es"), (4, 1, "revise"))
     assert s.research_calls[1][1] == ["Unsupported claim: Cada año."]
+
+
+async def malformed(*args):
+    raise MalformedOutput("bad output")
+
+
+@pytest.mark.parametrize("stage, language", [("intake", "en"), ("researcher", "es"), ("verifier", "es")])
+def test_malformed_output_abstains(stage, language):
+    s = Script(research=[GOOD], verdicts=[verdict("pass")])
+    agents = s.agents()
+    setattr(agents, stage, malformed)
+    request = AskRequest(question="¿Cada cuánto?")
+    r = asyncio.run(make_ask(agents, Settings(_env_file=None))(request))
+    assert (r.outcome, r.language, r.message, r.citations) == ("abstain", language, abstention(language), [])
+    assert r.trace.verdict is None
+    assert_invariants(r, {CHUNK.chunk_id: CHUNK})

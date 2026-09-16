@@ -100,3 +100,4 @@ def test_setup_error_has_no_traceback(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Traceback" not in captured.err
     assert "Traceback" not in captured.out
+    assert "missing API key" in captured.err

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from pool_qa.agents import render_chunks, render_history
 from pool_qa.contract import Chunk, Filters, IntakeResult, ResearchResult, Turn
-from pool_qa.llm import ProviderError, invoke
+from pool_qa.llm import MalformedOutput, invoke
 from pool_qa.settings import Settings
 
 SearchFn = Callable[[str, Filters, int], list[Chunk]]
@@ -123,5 +123,5 @@ async def run_researcher(
                 content = f"Error: unknown tool {call['name']}."
             messages.append(ToolMessage(content, tool_call_id=call["id"]))
         if malformed > 1:
-            raise ProviderError("researcher returned malformed output twice")
-    raise ProviderError("researcher did not submit a result")
+            raise MalformedOutput("researcher returned malformed output twice")
+    raise MalformedOutput("researcher did not submit a result")

@@ -12,6 +12,17 @@ from pool_qa.contract import (
 from pool_qa.phrases import abstention, refusal
 
 
+def abstain_response(language: str, revisions: int, search_calls: int) -> AskResponse:
+    return AskResponse(
+        outcome="abstain",
+        language=language,
+        message=abstention(language),
+        citations=[],
+        warnings=[],
+        trace=Trace(search_calls=search_calls, revisions=revisions, verdict=None),
+    )
+
+
 def build_response(
     intake: IntakeResult,
     research: ResearchResult | None,

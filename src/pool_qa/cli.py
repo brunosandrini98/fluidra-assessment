@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None, ask=None) -> int:
     except RequestTimeout as exc:
         return _error("timeout", str(exc), 1)
     except Exception as exc:  # noqa: BLE001 -- CLI boundary: report any failure as exit code 1
-        print(f"error: {type(exc).__name__}", file=sys.stderr)
+        print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
 
     print(response.model_dump_json(indent=2) if args.json else render(response))

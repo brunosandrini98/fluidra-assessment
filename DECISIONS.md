@@ -231,3 +231,12 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 
 **Decision:** A Verifier `pass` that marks any claim `supported: false` is treated as `revise`, with each unsupported claim added to `issues`. Enforced in code after the Verifier returns.
 **Consequences:** Code catches self-contradictory verdicts only; whether claims are judged correctly is measured by the eval.
+
+## D29 — Malformed output and provider errors
+2026-09-16 · fixed · supersedes the malformed-output rule in D24
+
+**Decision:**
+- Output an agent cannot use after one retry raises `MalformedOutput`. The request ends as `abstain` with the static phrase, in the Intake language, or English when Intake failed.
+- Only `anthropic.APIError` (status, connection, timeout) becomes `ProviderError` and HTTP 502. Other exceptions propagate as bugs (HTTP 500, CLI exit 1).
+- `anthropic` is a direct dependency, imported only in `llm.py`.
+**Consequences:** 502 means the provider failed, not that the model misbehaved. Switching provider changes the caught exception type in `llm.py`.
