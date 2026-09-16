@@ -55,14 +55,14 @@ Models are config strings per agent. No provider-specific features.
 
 ## Ingestion
 
-- Tier 0: `pypdf` text of the English section, chunked by page and heading pattern. `figure_refs` from "(Fig. N)" regex; `section` from heading patterns.
+- Tier 0: `pypdf` text of the English section, chunked by page, split at numbered headings, page fallback and size cap (D19). `figure_refs` from "(Fig. N)" regex; `section` from heading patterns.
 - Tier 1: Docling. Tables keep row/column semantics inside chunks. Figure references attach to chunks. Exact representation fixed after a Docling spike.
 - Parsed output is committed; the app runs without running ingestion.
 - Every chunk carries all metadata fields, empty or null when unknown. `warning_ids` stays empty until structured safety warnings are implemented.
 
 ## Retrieval
 
-- `search(query, filters) -> list[Chunk]` is the only corpus access.
+- `search(query, filters, k) -> list[Chunk]` is the only corpus access.
 - Tier 0 body: BM25 (`bm25s`). Tier 1 body: BM25 + dense (`multilingual-e5-small`) fused with reciprocal rank fusion.
 - Vectors are an in-memory numpy array persisted to disk.
 - Filters include `language`, set by code to the pivot language.
@@ -83,7 +83,7 @@ Models are config strings per agent. No provider-specific features.
 
 ## Evaluation
 
-Command: `uv run python -m eval.run`. Prints a table, writes a JSON report. Golden set: `eval/golden.jsonl`, dev-owned.
+Command: `uv run python -m pool_qa.eval.run`. Prints a table, writes a JSON report. Golden set: `eval/golden.jsonl`, dev-owned.
 
 | Gate | Method | Threshold | From tier |
 |---|---|---|---|
@@ -115,12 +115,13 @@ Simplifications built into this design, and what changes at scale.
 | No prompt-injection defences; client-held history can be forged (e.g. fake assistant turns bypass the clarification cap) | Input guardrails; server-side or signed history |
 | Verifier and eval judge share model family with the Researcher | Different-family judge; periodic human labelling |
 | Stateless server: no sessions, no audit trail | Server-side sessions with persisted traces |
+| Chunking validated on one manual only | Chunk quality checked per new document family before indexing |
 | 14 golden questions: directional, not statistically significant | Larger set built from real user questions |
 | No auth, rate limiting, or tracing | Provided by the target platform (see deployment document) |
 
 ## Stack
 
-Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `sentence-transformers`, numpy, `langgraph`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`.
+Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`.
 
 ## Deliverables
 
