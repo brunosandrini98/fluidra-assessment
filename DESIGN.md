@@ -119,6 +119,7 @@ Simplifications built into this design, and what changes at scale.
 | Stateless server: no sessions, no audit trail | Server-side sessions with persisted traces |
 | Chunking validated on one manual only | Chunk quality checked per new document family before indexing |
 | 14 golden questions: directional, not statistically significant | Larger set built from real user questions |
+| Eval is one run per question on nondeterministic models; results are not stable behaviour | Repeated runs per question with pass rates |
 | No auth, rate limiting, or tracing | Provided by the target platform (see deployment document) |
 
 ## Stack

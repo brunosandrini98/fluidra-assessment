@@ -203,3 +203,12 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 - Malformed structured output: one retry, then 502.
 - Async graph so the deadline cancels in-flight calls.
 - `langchain` for `init_chat_model`; `httpx` dev-only.
+
+## D25 — Tier 0 eval gates
+2026-09-16 · fixed · extends D10, D12
+
+**Decision:**
+- `Completed end to end`: every golden question returns an `AskResponse`. Provider errors, timeouts, and other exceptions are recorded per question and fail the gate. Tier 0 gate, from the Tier 0 exit.
+- `Citation IDs valid`: in every completed response, `[cN]` markers map 1:1 to `citations[].id`, each `chunk_id` exists in the corpus, `page` equals the chunk page, and `quote` matches the chunk text with whitespace collapsed (D22).
+- Tier 0 passes when all Tier 0 gates pass. Reports are written to `eval/reports/<UTC timestamp>.json` and not committed.
+**Consequences:** The eval cannot check that cited chunks were retrieved in the same request (invariant 3); the response does not expose retrieval.
