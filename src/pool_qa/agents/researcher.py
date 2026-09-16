@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from pool_qa.agents import render_chunks, render_history
 from pool_qa.contract import Chunk, Filters, IntakeResult, ResearchResult, Turn
-from pool_qa.llm import ProviderError, invoke
+from pool_qa.llm import MalformedOutput, invoke
 from pool_qa.settings import Settings
 
 SearchFn = Callable[[str, Filters, int], list[Chunk]]
@@ -19,7 +19,7 @@ Tools:
 - submit: your final result. Call it once, when done.
 
 Submit exactly one of:
-- "answer": the message in the user's language ({language}). End every claim with a marker [chunk_id] naming the chunk that supports it. Give exactly one citation per cited chunk, with a verbatim quote of at most 200 characters copied from that chunk. Copy characters exactly as they appear, including apostrophes and punctuation. Include the safety instructions (warnings, precautions) that the retrieved chunks give for the task. When the answer depends on a condition, give each branch with its citation. Use square brackets only for markers; write figure references as "Fig. 5".
+- "answer": the message in the user's language ({language}). End every claim with a marker [chunk_id] naming the chunk that supports it. Give exactly one citation per cited chunk, with a verbatim quote of at most 200 characters copied from that chunk. Copy characters exactly as they appear, including apostrophes and punctuation. Include the safety instructions (warnings, precautions) that the retrieved chunks give for the task. When the answer depends on a condition, give each branch with its citation; if several branches are supported by the same chunk, cite that chunk once and repeat its marker for each branch. Use square brackets only for markers; write figure references as "Fig. 5".
 - "clarify": one short question in the user's language, only when the answer depends on information you do not have and the branches cannot be listed briefly. No citations.
 - "abstain": a short reason in the user's language when the chunks do not answer the question. No citations."""
 
@@ -123,5 +123,5 @@ async def run_researcher(
                 content = f"Error: unknown tool {call['name']}."
             messages.append(ToolMessage(content, tool_call_id=call["id"]))
         if malformed > 1:
-            raise ProviderError("researcher returned malformed output twice")
-    raise ProviderError("researcher did not submit a result")
+            raise MalformedOutput("researcher returned malformed output twice")
+    raise MalformedOutput("researcher did not submit a result")

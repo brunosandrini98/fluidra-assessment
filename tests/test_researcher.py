@@ -1,12 +1,14 @@
 import asyncio
 
+import anthropic
+import httpx
 import pytest
 from langchain_core.messages import AIMessage
 
 from fakes import FakeToolModel, ai_tool_call, make_chunk
 from pool_qa.agents.researcher import SearchTool, researcher_messages, run_researcher
 from pool_qa.contract import Filters, IntakeResult, ResearchResult
-from pool_qa.llm import ProviderError
+from pool_qa.llm import MalformedOutput, ProviderError
 from pool_qa.settings import Settings
 
 CHUNK = make_chunk("user_manual-p12-1", "Replace the mechanical seal every year.")
@@ -86,12 +88,14 @@ def test_malformed_submit_retried_once_with_feedback():
 
 def test_second_malformed_reply_raises():
     model = FakeToolModel([AIMessage(content="plain text"), ai_tool_call("submit", {"outcome": "maybe"}, "f0")])
-    with pytest.raises(ProviderError):
+    with pytest.raises(MalformedOutput):
         run(model, RecordingSearch([CHUNK]))
 
 
 def test_provider_exception_wrapped():
-    model = FakeToolModel([RuntimeError("connection reset")])
+    model = FakeToolModel(
+        [anthropic.APIConnectionError(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"))]
+    )
     with pytest.raises(ProviderError):
         run(model, RecordingSearch([CHUNK]))
 
@@ -108,3 +112,8 @@ def test_prompt_cite_or_abstain():
     assert "only" in system and "general knowledge" in system
     assert "abstain" in system and "safety" in system and "verbatim" in system
     assert "[chunk_id]" in system
+
+
+def test_prompt_reuses_marker_for_same_chunk_branches():
+    system = researcher_messages("q", [], INTAKE, [], "en", 3)[0].content.lower()
+    assert "cite that chunk once and repeat its marker" in system

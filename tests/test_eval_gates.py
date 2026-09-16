@@ -1,12 +1,20 @@
 from eval_stubs import CHUNKS, citation, response
 from pool_qa.eval.gates import (
-    CITATIONS, COMPLETED, FALSE_ANSWERS, ErrorInfo, QuestionResult,
-    citation_issues, compute_gates, outcome_match, tier0_status,
+    CITATIONS,
+    CITED_PAGES,
+    COMPLETED,
+    FALSE_ANSWERS,
+    OUTCOMES,
+    ErrorInfo,
+    QuestionResult,
+    citation_issues,
+    compute_gates,
+    tier0_status,
 )
 
 
-def result(id, expected, resp=None, error=None):
-    return QuestionResult(id=id, expected_outcome=expected, response=resp, error=error)
+def result(id, expected, resp=None, error=None, pages=()):
+    return QuestionResult(id=id, expected_outcome=expected, expected_pages=list(pages), response=resp, error=error)
 
 
 def gate(gates, name):
@@ -63,13 +71,18 @@ def test_citation_gate_lists_failures():
 
 
 def test_false_answer_gate():
-    gates = compute_gates([result("t0-04", "abstain", response("answer")), result("t0-05", "refuse", response("refuse"))], CHUNKS)
+    gates = compute_gates(
+        [result("t0-04", "abstain", response("answer")), result("t0-05", "refuse", response("refuse"))], CHUNKS
+    )
     g = gate(gates, FALSE_ANSWERS)
     assert (g.status, g.value, g.failures) == ("fail", "1", ["t0-04: expected abstain, got answer"])
 
 
 def test_errored_question_fails_completed_only():
-    results = [result("t0-01", "answer", response()), result("t0-02", "answer", error=ErrorInfo(type="timeout", detail="slow"))]
+    results = [
+        result("t0-01", "answer", response()),
+        result("t0-02", "answer", error=ErrorInfo(type="timeout", detail="slow")),
+    ]
     gates = compute_gates(results, CHUNKS)
     assert (gate(gates, COMPLETED).status, gate(gates, COMPLETED).value) == ("fail", "1/2")
     assert gate(gates, COMPLETED).failures == ["t0-02: timeout"]
@@ -78,13 +91,33 @@ def test_errored_question_fails_completed_only():
 
 
 def test_later_tier_gates_pending_and_ignored():  # D8
-    gates = compute_gates([result("t0-01", "answer", response())], CHUNKS)
+    gates = compute_gates([result("t0-01", "answer", response(), pages=[11])], CHUNKS)
     pending = [g for g in gates if g.status == "pending"]
-    assert {g.name for g in gates if g.tier == 0} == {COMPLETED, FALSE_ANSWERS, CITATIONS}
-    assert len(pending) == 7 and all(g.tier >= 1 and g.value is None for g in pending)
+    assert {g.name for g in gates if g.tier == 0} == {COMPLETED, FALSE_ANSWERS, CITATIONS, OUTCOMES, CITED_PAGES}
+    assert len(pending) == 5 and all(g.tier >= 1 and g.value is None for g in pending)
     assert tier0_status(gates) == "pass"
 
 
-def test_outcome_match():
-    results = [result("t0-01", "answer", response("abstain")), result("t0-04", "abstain", response("abstain")), result("t0-05", "refuse", error=ErrorInfo(type="timeout", detail=""))]
-    assert outcome_match(results) == "1/3"
+def test_outcome_gate_lists_mismatches_and_errors():
+    results = [
+        result("t0-01", "answer", response("abstain"), pages=[11]),
+        result("t0-04", "abstain", response("abstain")),
+        result("t0-05", "refuse", error=ErrorInfo(type="timeout", detail="")),
+    ]
+    g = gate(compute_gates(results, CHUNKS), OUTCOMES)
+    assert (g.status, g.value) == ("fail", "1/3")
+    assert g.failures == ["t0-01: expected answer, got abstain", "t0-05: expected refuse, got timeout"]
+
+
+def test_outcome_gate_allows_one_miss_in_fourteen():
+    results = [result(f"q{i}", "abstain", response("abstain")) for i in range(13)]
+    results.append(result("q13", "answer", response("abstain")))
+    assert gate(compute_gates(results, CHUNKS), OUTCOMES).status == "pass"
+
+
+def test_cited_page_gate():
+    ok = result("t0-01", "answer", response(), pages=[11])
+    wrong = result("t0-02", "answer", response(), pages=[12])
+    g = gate(compute_gates([ok, wrong], CHUNKS), CITED_PAGES)
+    assert (g.status, g.value) == ("fail", "1/2")
+    assert g.failures == ["t0-02: cited pages [11], expected [12]"]

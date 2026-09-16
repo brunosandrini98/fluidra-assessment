@@ -5,9 +5,11 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from pool_qa.contract import Chunk
+from pool_qa.retrieval import load_chunks
 from pool_qa.settings import ROOT, Settings
 
 PDF_PATH = ROOT / "data" / "user_manual.pdf"
+TRANSCRIPTIONS_PATH = ROOT / "data" / "transcriptions.jsonl"
 DOCUMENT = "user_manual.pdf"
 ENGLISH_PAGES = range(5, 14)
 MAX_CHARS = 2000
@@ -18,10 +20,7 @@ FIGURE = re.compile(r"\(Fig\. (\d+)\)")
 def strip_furniture(pages: dict[int, list[str]]) -> dict[int, list[str]]:
     counts = Counter(line for lines in pages.values() for line in set(lines))
     repeated = {line for line, n in counts.items() if n * 2 >= len(pages)}
-    return {
-        page: [l for l in lines if l not in repeated and l != str(page)]
-        for page, lines in pages.items()
-    }
+    return {page: [l for l in lines if l not in repeated and l != str(page)] for page, lines in pages.items()}
 
 
 def split_sections(
@@ -80,11 +79,17 @@ def build_chunks(pages: dict[int, list[str]]) -> list[Chunk]:
     return chunks
 
 
+def ingest() -> list[Chunk]:
+    transcribed = load_chunks(TRANSCRIPTIONS_PATH)
+    replaced = {c.page for c in transcribed}
+    kept = [c for c in build_chunks(read_pages()) if c.page not in replaced]
+    return sorted(kept + transcribed, key=lambda c: c.page)
+
+
 def read_pages(pdf_path: Path = PDF_PATH) -> dict[int, list[str]]:
     reader = PdfReader(pdf_path)
     return {
-        page: [line.strip() for line in reader.pages[page - 1].extract_text().splitlines()]
-        for page in ENGLISH_PAGES
+        page: [line.strip() for line in reader.pages[page - 1].extract_text().splitlines()] for page in ENGLISH_PAGES
     }
 
 
@@ -94,7 +99,7 @@ def render(chunks: list[Chunk]) -> str:
 
 def main() -> None:
     path = Settings().chunks_path
-    path.write_text(render(build_chunks(read_pages())), encoding="utf-8")
+    path.write_text(render(ingest()), encoding="utf-8")
     print(f"wrote {path}")
 
 

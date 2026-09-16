@@ -7,19 +7,22 @@ import pytest
 from fakes import make_chunk
 from invariants import assert_invariants
 from pool_qa.agents.researcher import ResearchRun
-from pool_qa.contract import AskRequest, DraftCitation, IntakeResult, ResearchResult, Turn, VerifierResult
+from pool_qa.contract import AskRequest, Claim, DraftCitation, IntakeResult, ResearchResult, Turn, VerifierResult
 from pool_qa.graph import Agents, RequestTimeout, make_ask
+from pool_qa.llm import MalformedOutput
 from pool_qa.phrases import abstention, refusal
 from pool_qa.settings import Settings
 
 CHUNK = make_chunk("user_manual-p12-1", "Replace the mechanical seal every year.")
 PROCEED = IntakeResult(decision="proceed", language="es", retrieval_query="seal")
 GOOD = ResearchResult(
-    outcome="answer", message="Cada año [user_manual-p12-1].",
+    outcome="answer",
+    message="Cada año [user_manual-p12-1].",
     citations=[DraftCitation(chunk_id="user_manual-p12-1", quote="every year")],
 )
 BAD = ResearchResult(
-    outcome="answer", message="Cada año [user_manual-p12-1].",
+    outcome="answer",
+    message="Cada año [user_manual-p12-1].",
     citations=[DraftCitation(chunk_id="user_manual-p12-1", quote="every month")],
 )
 CLARIFY = ResearchResult(outcome="clarify", message="¿Qué modelo?", citations=[])
@@ -93,7 +96,7 @@ def test_a4_clarify():
 def test_a5_abstain():
     s = Script(research=[ABSTAIN])
     r = ask(s)
-    assert (r.outcome, r.message) == ("abstain", "El manual no lo indica.")
+    assert (r.outcome, r.message) == ("abstain", abstention("es"))
     assert s.verifier_calls == []
 
 
@@ -137,7 +140,8 @@ def test_a10_verifier_abstain():
 def test_a11_researcher_changes_course_after_revision(second):
     s = Script(research=[GOOD, second], verdicts=[verdict("revise")])
     r = ask(s)
-    assert (r.outcome, r.message, trace(r)) == (second.outcome, second.message, (4, 1, None))
+    expected = second.message if second.outcome == "clarify" else abstention("es")
+    assert (r.outcome, r.message, trace(r)) == (second.outcome, expected, (4, 1, None))
     assert len(s.verifier_calls) == 1
 
 
@@ -153,12 +157,24 @@ def test_logs_one_line_per_node(caplog):
     ask(Script(research=[BAD, GOOD], verdicts=[verdict("pass")]))
     lines = [json.loads(rec.message) for rec in caplog.records]
     assert [line["node"] for line in lines] == [
-        "intake", "researcher", "check", "revise", "researcher", "check", "verifier", "build",
+        "intake",
+        "researcher",
+        "check",
+        "revise",
+        "researcher",
+        "check",
+        "verifier",
+        "build",
     ]
     assert len({line["request_id"] for line in lines}) == 1
     assert lines[1] | {"ms": 0} == {
-        "request_id": lines[0]["request_id"], "node": "researcher", "ms": 0,
-        "outcome": "answer", "citations": 1, "search_calls": 2, "tokens": {},
+        "request_id": lines[0]["request_id"],
+        "node": "researcher",
+        "ms": 0,
+        "outcome": "answer",
+        "citations": 1,
+        "search_calls": 2,
+        "tokens": {},
     }
     assert lines[2]["issues"] and lines[6]["verdict"] == "pass" and lines[7]["outcome"] == "answer"
 
@@ -177,7 +193,9 @@ def test_a21_default_agents_use_per_agent_model_strings(monkeypatch):
 
     built = []
     monkeypatch.setattr(graph_module, "chat_model", lambda model, settings: built.append(model) or object())
-    settings = Settings(_env_file=None, intake_model="m-intake", researcher_model="m-research", verifier_model="m-verify")
+    settings = Settings(
+        _env_file=None, intake_model="m-intake", researcher_model="m-research", verifier_model="m-verify"
+    )
     graph_module.default_agents(settings)
     assert built == ["m-intake", "m-research", "m-verify"]
 
@@ -190,3 +208,29 @@ def test_deadline_raises_request_timeout():
 
     with pytest.raises(RequestTimeout):
         ask(Slow(), request_deadline_s=0.05)
+
+
+def test_verifier_pass_with_unsupported_claim_revises_then_abstains():
+    contradiction = VerifierResult(
+        verdict="pass", claims=[Claim(text="Cada año.", supported=False, chunk_ids=[])], issues=[]
+    )
+    s = Script(research=[GOOD, GOOD], verdicts=[contradiction, contradiction])
+    r = ask(s)
+    assert (r.outcome, r.message, trace(r)) == ("abstain", abstention("es"), (4, 1, "revise"))
+    assert s.research_calls[1][1] == ["Unsupported claim: Cada año."]
+
+
+async def malformed(*args):
+    raise MalformedOutput("bad output")
+
+
+@pytest.mark.parametrize("stage, language", [("intake", "en"), ("researcher", "es"), ("verifier", "es")])
+def test_malformed_output_abstains(stage, language):
+    s = Script(research=[GOOD], verdicts=[verdict("pass")])
+    agents = s.agents()
+    setattr(agents, stage, malformed)
+    request = AskRequest(question="¿Cada cuánto?")
+    r = asyncio.run(make_ask(agents, Settings(_env_file=None))(request))
+    assert (r.outcome, r.language, r.message, r.citations) == ("abstain", language, abstention(language), [])
+    assert r.trace.verdict is None
+    assert_invariants(r, {CHUNK.chunk_id: CHUNK})

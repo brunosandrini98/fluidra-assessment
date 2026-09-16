@@ -19,7 +19,7 @@ def render(response: AskResponse) -> str:
         lines += ["", "Citations:"]
         for c in response.citations:
             section = f", {c.section}" if c.section else ""
-            lines.append(f"  [{c.id}] {c.document} p. {c.page}{section}: \"{c.quote}\"")
+            lines.append(f'  [{c.id}] {c.document} p. {c.page}{section}: "{c.quote}"')
     t = response.trace
     lines += ["", f"Trace: search_calls={t.search_calls} revisions={t.revisions} verdict={t.verdict}"]
     return "\n".join(lines)
@@ -52,8 +52,8 @@ def main(argv: list[str] | None = None, ask=None) -> int:
         return _error("provider_error", str(exc), 1)
     except RequestTimeout as exc:
         return _error("timeout", str(exc), 1)
-    except Exception as exc:
-        print(f"error: {type(exc).__name__}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 -- CLI boundary: report any failure as exit code 1
+        print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
 
     print(response.model_dump_json(indent=2) if args.json else render(response))

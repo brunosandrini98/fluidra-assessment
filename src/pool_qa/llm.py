@@ -1,17 +1,20 @@
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any
 
+import anthropic
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 
 from pool_qa.settings import Settings
 
-T = TypeVar("T", bound=BaseModel)
-
 
 class ProviderError(Exception):
-    """LLM call failed after retries, or returned unusable output twice."""
+    """LLM API call failed after retries."""
+
+
+class MalformedOutput(Exception):
+    """Model returned unusable output twice."""
 
 
 def chat_model(model: str, settings: Settings) -> BaseChatModel:
@@ -24,11 +27,11 @@ def chat_model(model: str, settings: Settings) -> BaseChatModel:
 async def invoke(runnable, messages: list) -> Any:
     try:
         return await runnable.ainvoke(messages)
-    except Exception as exc:
+    except anthropic.APIError as exc:
         raise ProviderError(f"{type(exc).__name__}: {exc}") from exc
 
 
-async def structured(
+async def structured[T: BaseModel](
     model, schema: type[T], messages: list, valid: Callable[[T], bool] = lambda _: True
 ) -> T:
     runnable = model.with_structured_output(schema, include_raw=True, method="function_calling")
@@ -37,4 +40,4 @@ async def structured(
         parsed = out["parsed"]
         if parsed is not None and valid(parsed):
             return parsed
-    raise ProviderError(f"malformed {schema.__name__} output")
+    raise MalformedOutput(f"malformed {schema.__name__} output")

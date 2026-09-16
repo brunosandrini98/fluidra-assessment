@@ -1,6 +1,6 @@
 import re
 
-from pool_qa.contract import Chunk, ResearchResult, Turn
+from pool_qa.contract import Chunk, ResearchResult, Turn, VerifierResult
 
 QUOTE_MAX = 200
 MARKER = re.compile(r"\[([^\[\]\s]+)\]")
@@ -54,3 +54,11 @@ def citation_check(result: ResearchResult, retrieved: dict[str, Chunk]) -> list[
     for token in sorted(marked - set(cited)):
         issues.append(f"Marker [{token}] has no citation.")
     return issues
+
+
+def enforce_claims(result: VerifierResult) -> VerifierResult:
+    unsupported = [c.text for c in result.claims if not c.supported]
+    if result.verdict != "pass" or not unsupported:
+        return result
+    issues = result.issues + [f"Unsupported claim: {text}" for text in unsupported]
+    return result.model_copy(update={"verdict": "revise", "issues": issues})

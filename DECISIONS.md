@@ -212,3 +212,48 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 - `Citation IDs valid`: in every completed response, `[cN]` markers map 1:1 to `citations[].id`, each `chunk_id` exists in the corpus, `page` equals the chunk page, and `quote` matches the chunk text with whitespace collapsed (D22).
 - Tier 0 passes when all Tier 0 gates pass. Reports are written to `eval/reports/<UTC timestamp>.json` and not committed.
 **Consequences:** The eval cannot check that cited chunks were retrieved in the same request (invariant 3); the response does not expose retrieval.
+
+## D26 — Lint, format and CI
+2026-09-16 · fixed
+
+**Decision:** `ruff` (dev) for lint and format: line length 120, default rules plus import sorting. GitHub Actions runs `ruff check`, `ruff format --check` and `pytest` on every push and pull request.
+**Consequences:** Style and tests are checked on every change without relying on a manual run.
+
+## D27 — Hand transcriptions for content missing from the text
+2026-09-16 · provisional
+
+**Context:** `pypdf` drops the ● markers of the page 13 troubleshooting matrix, so causes cannot be tied to symptoms. Fig. 4 (page 94) and the installation zones (page 97) hold facts that appear nowhere in the text.
+**Decision:** These are transcribed by hand from the page images into `data/transcriptions.jsonl`: one chunk per troubleshooting symptom, one chunk per figure page. Ingestion replaces the `pypdf` chunks of any transcribed page. Figures the text already covers, and the wiring diagrams, are not transcribed, so no unchecked transcription is cited as the manual.
+**Consequences:** Citation quotes for these chunks come from the transcription, not the PDF text layer. Does not scale; the production equivalent is layout-aware parsing (Docling) or VLM figure descriptions, checked per document family.
+
+## D28 — Verifier pass with an unsupported claim
+2026-09-16 · fixed · extends D4
+
+**Decision:** A Verifier `pass` that marks any claim `supported: false` is treated as `revise`, with each unsupported claim added to `issues`. Enforced in code after the Verifier returns.
+**Consequences:** Code catches self-contradictory verdicts only; whether claims are judged correctly is measured by the eval.
+
+## D29 — Malformed output and provider errors
+2026-09-16 · fixed · supersedes the malformed-output rule in D24
+
+**Decision:**
+- Output an agent cannot use after one retry raises `MalformedOutput`. The request ends as `abstain` with the static phrase, in the Intake language, or English when Intake failed.
+- Only `anthropic.APIError` (status, connection, timeout) becomes `ProviderError` and HTTP 502. Other exceptions propagate as bugs (HTTP 500, CLI exit 1).
+- `anthropic` is a direct dependency, imported only in `llm.py`.
+**Consequences:** 502 means the provider failed, not that the model misbehaved. Switching provider changes the caught exception type in `llm.py`.
+
+## D30 — Static phrase for every abstain
+2026-09-16 · fixed · supersedes the Researcher-abstain rule in D23
+
+**Context:** In an eval run the Researcher abstained in Italian on an English question although Intake detected `en`.
+**Decision:** Every `abstain`, including one from the Researcher, returns the static abstention phrase in the Intake language. `clarify` keeps the Researcher's text.
+**Consequences:** Abstain messages are always in the detected language; the Researcher's specific reason is not returned.
+
+## D31 — Outcome and cited-page gates from Tier 0
+2026-09-16 · fixed · extends D25
+
+**Context:** With outcome match informational, a system that abstains on every question passes all Tier 0 gates.
+**Decision:**
+- `Outcome matches expected` is a Tier 0 gate: matches ≥ 13/14 of the golden set, so 5/5 with 5 questions. Errors count as mismatches.
+- `Citation page in expected_pages` is a Tier 0 gate: ≥ 90% of answer questions answered with at least one citation on an expected page.
+- The informational outcome line is removed.
+**Consequences:** An always-abstain system fails Tier 0. With 5 questions and one run per question, one nondeterministic miss fails the gate.

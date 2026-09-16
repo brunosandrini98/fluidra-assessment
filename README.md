@@ -4,7 +4,7 @@ Multi-agent question answering over pool equipment documents for pool profession
 
 ## Status
 
-Tier 0 in progress: contract models, chunked English pages, BM25 search, the three-agent graph, `POST /ask`, the CLI, and the eval command are in place. Latest eval (2026-09-16): Tier 0 fail — one question ended in a provider error (malformed Researcher output). See `DESIGN.md` § Tiers.
+Tier 0 complete: contract models, chunked English pages with hand transcriptions, BM25 search, the three-agent graph, `POST /ask`, the CLI, and the eval command. Latest eval (2026-09-16, one run per question): Tier 0 pass — 5/5 outcomes, citations valid, cited pages in expected pages. The run before it failed t0-03 (abstained) and was followed by a Researcher prompt change. In both runs every answer needed its one allowed revision, so results are not yet stable. See `DESIGN.md` § Tiers.
 
 ## Run
 
@@ -22,9 +22,9 @@ curl -s localhost:8000/ask -H 'content-type: application/json' -d '{"question": 
 
 `history.json` is a list of turns (`role`, `content`, `outcome`) as in `CONTRACT.md`. Errors return `ErrorResponse`: 422 invalid request, 502 provider failure, 504 deadline; the CLI exits 2 or 1.
 
-The eval runs `eval/golden.jsonl` through the app with live LLM calls, prints a table, and writes `eval/reports/<UTC timestamp>.json` (not committed). Tier 0 gates are defined in `DECISIONS.md` D25; later-tier gates are reported as pending. Exit code 0 means Tier 0 gates pass, 1 means a gate failed.
+The eval runs `eval/golden.jsonl` through the app with live LLM calls, prints a table, and writes `eval/reports/<UTC timestamp>.json` (not committed). Tier 0 gates are defined in `DECISIONS.md` D25 and D31; later-tier gates are reported as pending. Exit code 0 means Tier 0 gates pass, 1 means a gate failed.
 
-The parsed manual is committed in `data/chunks.jsonl`. Tier 0 chunking is structure-aware with fallback: pages are split at numbered section headings, pages without headings stay whole, and chunks are capped at 2,000 characters (`DECISIONS.md` D19). Regenerate with `uv run python -m pool_qa.ingest.pypdf_chunks`.
+The parsed manual is committed in `data/chunks.jsonl`. Tier 0 chunking is structure-aware with fallback: pages are split at numbered section headings, pages without headings stay whole, and chunks are capped at 2,000 characters (`DECISIONS.md` D19). Regenerate with `uv run python -m pool_qa.ingest.pypdf_chunks`. Content the PDF text loses — the page 13 troubleshooting matrix, Fig. 4 and the page 97 installation zones — is transcribed by hand into `data/transcriptions.jsonl` and replaces those pages at ingestion (`DECISIONS.md` D27).
 
 ## Documents
 

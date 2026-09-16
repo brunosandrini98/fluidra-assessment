@@ -15,12 +15,18 @@ from pool_qa import retrieval
 from pool_qa.agents.intake import run_intake
 from pool_qa.agents.researcher import ResearchRun, run_researcher
 from pool_qa.agents.verifier import run_verifier
-from pool_qa.checks import citation_check, truncate_history
+from pool_qa.checks import citation_check, enforce_claims, truncate_history
 from pool_qa.contract import (
-    AskRequest, AskResponse, Chunk, IntakeResult, ResearchResult, Turn, VerifierResult,
+    AskRequest,
+    AskResponse,
+    Chunk,
+    IntakeResult,
+    ResearchResult,
+    Turn,
+    VerifierResult,
 )
-from pool_qa.llm import chat_model
-from pool_qa.response import build_response
+from pool_qa.llm import MalformedOutput, chat_model
+from pool_qa.response import abstain_response, build_response
 from pool_qa.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -48,15 +54,22 @@ class State(TypedDict):
     issues: list[str]
     revisions: int
     search_calls: int
+    malformed: bool
     response: AskResponse | None
 
 
 def build_graph(agents: Agents):
     async def intake(s: State) -> dict:
-        return {"intake": await agents.intake(s["question"], s["history"])}
+        try:
+            return {"intake": await agents.intake(s["question"], s["history"])}
+        except MalformedOutput:
+            return {"malformed": True}
 
     async def researcher(s: State) -> dict:
-        run = await agents.researcher(s["question"], s["history"], s["intake"], s["issues"])
+        try:
+            run = await agents.researcher(s["question"], s["history"], s["intake"], s["issues"])
+        except MalformedOutput:
+            return {"malformed": True}
         return {
             "research": run.result,
             "search_calls": s["search_calls"] + run.search_calls,
@@ -69,21 +82,35 @@ def build_graph(agents: Agents):
     async def verifier(s: State) -> dict:
         research = s["research"]
         chunks = [s["retrieved"][c.chunk_id] for c in research.citations]
-        result = await agents.verifier(s["question"], s["intake"].language, research.message, chunks)
+        try:
+            result = enforce_claims(
+                await agents.verifier(s["question"], s["intake"].language, research.message, chunks)
+            )
+        except MalformedOutput:
+            return {"malformed": True}
         return {"verifier": result, "issues": result.issues}
 
     def revise(s: State) -> dict:
         return {"revisions": 1, "verifier": None}
 
     def build(s: State) -> dict:
-        return {"response": build_response(
-            s["intake"], s["research"], s["verifier"], s["retrieved"], s["revisions"], s["search_calls"]
-        )}
+        if s["malformed"]:
+            language = s["intake"].language if s["intake"] else "en"
+            return {"response": abstain_response(language, s["revisions"], s["search_calls"])}
+        return {
+            "response": build_response(
+                s["intake"], s["research"], s["verifier"], s["retrieved"], s["revisions"], s["search_calls"]
+            )
+        }
 
     def after_intake(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "researcher" if s["intake"].decision == "proceed" else "build"
 
     def after_researcher(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "check" if s["research"].outcome == "answer" else "build"
 
     def after_check(s: State) -> str:
@@ -92,12 +119,18 @@ def build_graph(agents: Agents):
         return "revise" if s["revisions"] == 0 else "build"
 
     def after_verifier(s: State) -> str:
+        if s["malformed"]:
+            return "build"
         return "revise" if s["verifier"].verdict == "revise" and s["revisions"] == 0 else "build"
 
     graph = StateGraph(State)
     for name, node in [
-        ("intake", intake), ("researcher", researcher), ("check", check),
-        ("verifier", verifier), ("revise", revise), ("build", build),
+        ("intake", intake),
+        ("researcher", researcher),
+        ("check", check),
+        ("verifier", verifier),
+        ("revise", revise),
+        ("build", build),
     ]:
         graph.add_node(name, logged(name, node))
     graph.add_edge(START, "intake")
@@ -116,7 +149,8 @@ def summary(s: State, update: dict) -> dict:
         out |= {"decision": intake.decision, "language": intake.language}
     if research := update.get("research"):
         out |= {
-            "outcome": research.outcome, "citations": len(research.citations),
+            "outcome": research.outcome,
+            "citations": len(research.citations),
             "search_calls": update["search_calls"] - s["search_calls"],
         }
     if "issues" in update:
@@ -125,6 +159,8 @@ def summary(s: State, update: dict) -> dict:
         out["verdict"] = verifier.verdict
     if response := update.get("response"):
         out["outcome"] = response.outcome
+    if update.get("malformed"):
+        out["malformed"] = True
     return out
 
 
@@ -139,10 +175,18 @@ def logged(name: str, node: Callable) -> Callable:
             model: {"input": u["input_tokens"], "output": u["output_tokens"]}
             for model, u in usage.usage_metadata.items()
         }
-        logger.info(json.dumps({
-            "request_id": s["request_id"], "node": name,
-            "ms": round((time.perf_counter() - start) * 1000), **summary(s, update), "tokens": tokens,
-        }, ensure_ascii=False))
+        logger.info(
+            json.dumps(
+                {
+                    "request_id": s["request_id"],
+                    "node": name,
+                    "ms": round((time.perf_counter() - start) * 1000),
+                    **summary(s, update),
+                    "tokens": tokens,
+                },
+                ensure_ascii=False,
+            )
+        )
         return update
 
     return run
@@ -153,10 +197,18 @@ def make_ask(agents: Agents, settings: Settings) -> Callable[[AskRequest], Await
 
     async def ask(request: AskRequest) -> AskResponse:
         state: State = {
-            "request_id": uuid.uuid4().hex[:8], "question": request.question,
+            "request_id": uuid.uuid4().hex[:8],
+            "question": request.question,
             "history": truncate_history(request.history, settings.history_turns),
-            "intake": None, "research": None, "verifier": None, "retrieved": {},
-            "issues": [], "revisions": 0, "search_calls": 0, "response": None,
+            "intake": None,
+            "research": None,
+            "verifier": None,
+            "retrieved": {},
+            "issues": [],
+            "revisions": 0,
+            "search_calls": 0,
+            "malformed": False,
+            "response": None,
         }
         try:
             final = await asyncio.wait_for(graph.ainvoke(state), settings.request_deadline_s)

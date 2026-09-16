@@ -44,12 +44,18 @@ def test_answer_renumbers_markers_and_builds_citations():
     assert_invariants(r, RETRIEVED)
 
 
-def test_researcher_clarify_and_abstain_keep_message():
-    for outcome in ("clarify", "abstain"):
-        research = ResearchResult(outcome=outcome, message="¿Qué modelo?", citations=[])
-        r = build_response(PROCEED, research, verdict("revise"), RETRIEVED, 1, 1)
-        assert (r.outcome, r.message, r.citations, r.trace.verdict) == (outcome, "¿Qué modelo?", [], "revise")
-        assert_invariants(r, RETRIEVED)
+def test_researcher_clarify_keeps_message():
+    research = ResearchResult(outcome="clarify", message="¿Qué modelo?", citations=[])
+    r = build_response(PROCEED, research, verdict("revise"), RETRIEVED, 1, 1)
+    assert (r.outcome, r.message, r.citations, r.trace.verdict) == ("clarify", "¿Qué modelo?", [], "revise")
+    assert_invariants(r, RETRIEVED)
+
+
+def test_researcher_abstain_uses_static_phrase():
+    research = ResearchResult(outcome="abstain", message="Le informazioni non ci sono.", citations=[])
+    r = build_response(PROCEED, research, None, RETRIEVED, 0, 1)
+    assert (r.outcome, r.message, r.citations) == ("abstain", abstention("es"), [])
+    assert_invariants(r, RETRIEVED)
 
 
 def test_answer_without_pass_is_static_abstain():

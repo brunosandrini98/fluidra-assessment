@@ -25,8 +25,16 @@ EXPECTED_FIELDS = {
     "Trace": ["search_calls", "revisions", "verdict"],
     "ErrorResponse": ["error", "detail"],
     "Chunk": [
-        "chunk_id", "document", "source_type", "effective_date", "language",
-        "page", "section", "text", "figure_refs", "warning_ids",
+        "chunk_id",
+        "document",
+        "source_type",
+        "effective_date",
+        "language",
+        "page",
+        "section",
+        "text",
+        "figure_refs",
+        "warning_ids",
     ],
     "Filters": ["language", "section", "page_range"],
     "IntakeResult": ["decision", "language", "retrieval_query"],
@@ -35,7 +43,12 @@ EXPECTED_FIELDS = {
     "Claim": ["text", "supported", "chunk_ids"],
     "VerifierResult": ["verdict", "claims", "issues"],
     "GoldenRecord": [
-        "id", "question", "language", "expected_outcome", "expected_pages", "must_include",
+        "id",
+        "question",
+        "language",
+        "expected_outcome",
+        "expected_pages",
+        "must_include",
     ],
 }
 
@@ -50,9 +63,15 @@ def test_outcome_vocabulary():
     assert set(contract.Outcome.__args__) == {"answer", "clarify", "abstain", "refuse"}
 
 
-CITATION = dict(
-    id="c1", chunk_id="x", document="d", page=1, page_in_language=None, section=None, quote="q"
-)
+CITATION = {
+    "id": "c1",
+    "chunk_id": "x",
+    "document": "d",
+    "page": 1,
+    "page_in_language": None,
+    "section": None,
+    "quote": "q",
+}
 
 
 @pytest.mark.parametrize(
@@ -77,10 +96,18 @@ def test_quote_at_limit_accepted():
 
 
 def make_chunk(**overrides) -> Chunk:
-    fields = dict(
-        chunk_id="doc-p1-1", document="doc.pdf", source_type="manual", effective_date=None,
-        language="en", page=1, section=None, text="t", figure_refs=[], warning_ids=[],
-    )
+    fields = {
+        "chunk_id": "doc-p1-1",
+        "document": "doc.pdf",
+        "source_type": "manual",
+        "effective_date": None,
+        "language": "en",
+        "page": 1,
+        "section": None,
+        "text": "t",
+        "figure_refs": [],
+        "warning_ids": [],
+    }
     return Chunk(**{**fields, **overrides})
 
 

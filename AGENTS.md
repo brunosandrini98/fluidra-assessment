@@ -18,6 +18,7 @@ Code conforms to these files. If code and a file disagree, stop and report; do n
 ```
 uv sync                                       # install
 uv run pytest                                 # tests
+uv run ruff check . && uv run ruff format .   # lint and format
 uv run python -m pool_qa.ingest.pypdf_chunks  # regenerate data/chunks.jsonl
 uv run python -m pool_qa.cli "question"       # ask from the CLI (--json, --history FILE)
 uv run uvicorn pool_qa.api:app                # serve POST /ask on :8000
@@ -36,7 +37,7 @@ Add new commands here when they are created.
 - Work in the current tier only (`DESIGN.md` § Tiers). A tier is done when its exit gates pass, tests pass, and docs match the code.
 - Interfaces and schemas in `CONTRACT.md` are fixed; change implementations, not signatures.
 - Every change keeps the app running end to end.
-- Run `uv run pytest` before reporting work as done. Run the eval when agents, prompts, retrieval, or ingestion change, and report the gate results.
+- Run `uv run pytest` and `uv run ruff check .` before reporting work as done. Run the eval when agents, prompts, retrieval, or ingestion change, and report the gate results.
 
 ## Conventions
 

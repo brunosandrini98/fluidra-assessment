@@ -6,10 +6,22 @@ from pool_qa.graph import RequestTimeout
 from pool_qa.llm import ProviderError
 
 RESPONSE = AskResponse(
-    outcome="answer", language="en", message="Every year [c1].",
-    citations=[Citation(id="c1", chunk_id="user_manual-p12-1", document="user_manual.pdf", page=12,
-                        page_in_language=None, section="5. MAINTENANCE", quote="Every 1 year")],
-    warnings=[], trace=Trace(search_calls=1, revisions=0, verdict="pass"),
+    outcome="answer",
+    language="en",
+    message="Every year [c1].",
+    citations=[
+        Citation(
+            id="c1",
+            chunk_id="user_manual-p12-1",
+            document="user_manual.pdf",
+            page=12,
+            page_in_language=None,
+            section="5. MAINTENANCE",
+            quote="Every 1 year",
+        )
+    ],
+    warnings=[],
+    trace=Trace(search_calls=1, revisions=0, verdict="pass"),
 )
 
 
@@ -40,7 +52,11 @@ def test_json_output(capsys):
 
 def test_history_file(tmp_path):
     path = tmp_path / "history.json"
-    path.write_text(json.dumps([{"role": "user", "content": "hi"}, {"role": "assistant", "content": "Which pump?", "outcome": "clarify"}]))
+    path.write_text(
+        json.dumps(
+            [{"role": "user", "content": "hi"}, {"role": "assistant", "content": "Which pump?", "outcome": "clarify"}]
+        )
+    )
     ask, seen = recording()
     assert main(["The small one", "--history", str(path)], ask=ask) == 0
     assert [t.outcome for t in seen[0].history] == [None, "clarify"]
@@ -64,6 +80,7 @@ def test_bad_history_is_invalid(tmp_path, capsys):
 def raising(exc):
     async def ask(request):
         raise exc
+
     return ask
 
 
@@ -83,3 +100,4 @@ def test_setup_error_has_no_traceback(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Traceback" not in captured.err
     assert "Traceback" not in captured.out
+    assert "missing API key" in captured.err

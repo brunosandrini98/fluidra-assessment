@@ -14,7 +14,7 @@ Interfaces and schemas are final at Tier 0. Later tiers change implementations o
 
 | Tier | Contents | Exit |
 |---|---|---|
-| 0 | Crude text extraction of English pages (`pypdf`); BM25 inside `search()`; 3 agents with revision cap; `POST /ask` and CLI; 5 golden questions and eval command; draft deployment doc; README | End-to-end on 5 questions; 0 answers where abstain/refuse expected; citation IDs valid |
+| 0 | Crude text extraction of English pages (`pypdf`); BM25 inside `search()`; 3 agents with revision cap; `POST /ask` and CLI; 5 golden questions and eval command; draft deployment doc; README | End-to-end on 5 questions; 0 answers where abstain/refuse expected; citation IDs valid; outcomes match; cited pages in `expected_pages` |
 | 1 | Docling ingestion (tables, sections); hybrid retrieval; 14 golden questions | All evaluation gates pass |
 | 2 | Judge validation; per-language page mapping; clarification cap enforced; deployment doc final | Judge–human agreement reported |
 | Later | Cross-encoder reranker; Langfuse tracing; VLM figure descriptions; 25-question golden set; single-agent baseline; LangGraph checkpointer; structured safety warnings; rolling history summary | — |
@@ -41,7 +41,7 @@ flowchart LR
 - Citation check and response builder are code, not agents.
 - The server is stateless. The client sends history; the server uses the first user turn plus the last 5 turns.
 - Refusal messages are static phrases per language, English fallback.
-- LLM calls have a timeout and retry with exponential backoff on rate limit, server, and connection errors; each request has an overall deadline. Provider failures return HTTP errors, not an outcome.
+- LLM calls have a timeout and retry with exponential backoff on rate limit, server, and connection errors; each request has an overall deadline. Provider failures return HTTP errors, not an outcome. Malformed model output after one retry ends as `abstain` (D29).
 
 ## Agents
 
@@ -55,7 +55,7 @@ Models are config strings per agent. No provider-specific features.
 
 ## Ingestion
 
-- Tier 0: `pypdf` text of the English section, chunked by page, split at numbered headings, page fallback and size cap (D19). `figure_refs` from "(Fig. N)" regex; `section` from heading patterns.
+- Tier 0: `pypdf` text of the English section, chunked by page, split at numbered headings, page fallback and size cap (D19). `figure_refs` from "(Fig. N)" regex; `section` from heading patterns. Hand transcriptions (`data/transcriptions.jsonl`) replace pages whose content the text loses (D27).
 - Tier 1: Docling. Tables keep row/column semantics inside chunks. Figure references attach to chunks. Exact representation fixed after a Docling spike.
 - Parsed output is committed; the app runs without running ingestion.
 - Every chunk carries all metadata fields, empty or null when unknown. `warning_ids` stays empty until structured safety warnings are implemented.
@@ -87,11 +87,12 @@ Command: `uv run python -m pool_qa.eval.run`. Prints a table, writes a JSON repo
 
 | Gate | Method | Threshold | From tier |
 |---|---|---|---|
-| Outcome matches expected | code | ≥ 13/14 | 1 |
+| Completed end to end | code | 100% | 0 |
+| Outcome matches expected | code | ≥ 13/14 | 0 |
 | Answered where abstain/refuse expected | code | 0 | 0 |
 | Citation IDs valid | code | 100% | 0 |
 | Retrieval recall@k on `expected_pages` | code | ≥ 90% | 1 |
-| Citation page in `expected_pages` | code | ≥ 90% | 1 |
+| Citation page in `expected_pages` | code | ≥ 90% | 0 |
 | Answer language matches question | code | 100% | 1 |
 | Unsupported claims (claim counts) | LLM judge | 0 | 1 |
 | `must_include` coverage | LLM judge | ≥ 90% | 1 |
@@ -124,7 +125,7 @@ Simplifications built into this design, and what changes at scale.
 
 ## Stack
 
-Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev).
+Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev), `ruff` (dev).
 
 ## Deliverables
 
