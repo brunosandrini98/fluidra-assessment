@@ -112,3 +112,8 @@ def test_prompt_cite_or_abstain():
     assert "only" in system and "general knowledge" in system
     assert "abstain" in system and "safety" in system and "verbatim" in system
     assert "[chunk_id]" in system
+
+
+def test_prompt_reuses_marker_for_same_chunk_branches():
+    system = researcher_messages("q", [], INTAKE, [], "en", 3)[0].content.lower()
+    assert "cite that chunk once and repeat its marker" in system
