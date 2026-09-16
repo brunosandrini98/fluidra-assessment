@@ -124,7 +124,7 @@ Simplifications built into this design, and what changes at scale.
 
 ## Stack
 
-Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev).
+Python 3.12, `uv`, `pypdf`, `docling`, `bm25s`, `PyStemmer`, `sentence-transformers`, numpy, `langgraph`, `langchain`, `langchain-anthropic`, `pydantic` v2, `pydantic-settings`, `fastapi`, `uvicorn`, `argparse`, `lingua-language-detector`, `pytest`, `httpx` (dev), `ruff` (dev).
 
 ## Deliverables
 

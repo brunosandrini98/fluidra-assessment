@@ -212,3 +212,9 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 - `Citation IDs valid`: in every completed response, `[cN]` markers map 1:1 to `citations[].id`, each `chunk_id` exists in the corpus, `page` equals the chunk page, and `quote` matches the chunk text with whitespace collapsed (D22).
 - Tier 0 passes when all Tier 0 gates pass. Reports are written to `eval/reports/<UTC timestamp>.json` and not committed.
 **Consequences:** The eval cannot check that cited chunks were retrieved in the same request (invariant 3); the response does not expose retrieval.
+
+## D26 — Lint, format and CI
+2026-09-16 · fixed
+
+**Decision:** `ruff` (dev) for lint and format: line length 120, default rules plus import sorting. GitHub Actions runs `ruff check`, `ruff format --check` and `pytest` on every push and pull request.
+**Consequences:** Style and tests are checked on every change without relying on a manual run.
