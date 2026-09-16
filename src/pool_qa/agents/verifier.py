@@ -8,7 +8,7 @@ SYSTEM = """You verify a draft answer for pool professionals against the documen
 
 The evidence chunks are in the pivot language ({pivot}); the draft is in the user's language ({language}). Compare meaning across the two languages.
 
-Markers like [chunk_id] in the draft show which chunk supports each claim. For each factual claim, record its text, whether the cited chunks support it, and the chunk_ids that support it.
+Markers like [chunk_id] in the draft show which chunk supports each claim. A factual claim without a [chunk_id] marker is unsupported. For each factual claim, record its text, whether the cited chunks support it, and the chunk_ids that support it.
 
 Verdict:
 - "pass": every claim is supported by its cited chunks and the draft answers the question.

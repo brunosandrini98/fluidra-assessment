@@ -31,6 +31,7 @@ def test_verifier_prompt_states_languages():  # invariant 11
     assert "pivot language (en)" in system
     assert "user's language (es)" in system
     assert "never" in system.lower() and "rewrite" in system.lower()
+    assert "A factual claim without a [chunk_id] marker is unsupported." in system
 
 
 def test_verifier_receives_full_chunk_text_and_no_history():
