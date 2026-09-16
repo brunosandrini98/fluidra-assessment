@@ -48,7 +48,7 @@ Citation:
   chunk_id: str
   document: str
   page: int
-  page_in_language: int | null
+  page_in_language: int | null  # null until Tier 2
   section: str | null
   quote: str                       # ≤ 200 chars
 
@@ -175,7 +175,7 @@ out: AskResponse
 6. `message` is in `language` for every outcome.
 7. At most one revision per request. A failure after it yields `abstain`.
 8. `clarify` and `abstain` from the Researcher skip the Verifier.
-9. At most one `clarify` per conversation: if `history` contains an assistant turn with `outcome = clarify`, the Researcher may only return `answer` or `abstain`.
+9. At most one `clarify` per conversation: if `history` contains an assistant turn with `outcome = clarify`, the Researcher may only return `answer` or `abstain`. Enforced from Tier 2.
 10. The server uses the first user turn plus the last N turns of `history` (config, default 5).
 11. The Verifier prompt states that evidence is in the pivot language and the draft in `language`.
 
