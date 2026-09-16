@@ -45,9 +45,9 @@ def build_response(
 
     if research is None:
         return reply("refuse", refusal(intake.language))
-    if research.outcome != "answer":
-        return reply(research.outcome, research.message)
-    if trace.verdict != "pass":
+    if research.outcome == "clarify":
+        return reply("clarify", research.message)
+    if research.outcome == "abstain" or trace.verdict != "pass":
         return reply("abstain", abstention(intake.language))
 
     ids: dict[str, str] = {}

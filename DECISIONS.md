@@ -240,3 +240,10 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 - Only `anthropic.APIError` (status, connection, timeout) becomes `ProviderError` and HTTP 502. Other exceptions propagate as bugs (HTTP 500, CLI exit 1).
 - `anthropic` is a direct dependency, imported only in `llm.py`.
 **Consequences:** 502 means the provider failed, not that the model misbehaved. Switching provider changes the caught exception type in `llm.py`.
+
+## D30 — Static phrase for every abstain
+2026-09-16 · fixed · supersedes the Researcher-abstain rule in D23
+
+**Context:** In an eval run the Researcher abstained in Italian on an English question although Intake detected `en`.
+**Decision:** Every `abstain`, including one from the Researcher, returns the static abstention phrase in the Intake language. `clarify` keeps the Researcher's text.
+**Consequences:** Abstain messages are always in the detected language; the Researcher's specific reason is not returned.

@@ -96,7 +96,7 @@ def test_a4_clarify():
 def test_a5_abstain():
     s = Script(research=[ABSTAIN])
     r = ask(s)
-    assert (r.outcome, r.message) == ("abstain", "El manual no lo indica.")
+    assert (r.outcome, r.message) == ("abstain", abstention("es"))
     assert s.verifier_calls == []
 
 
@@ -140,7 +140,8 @@ def test_a10_verifier_abstain():
 def test_a11_researcher_changes_course_after_revision(second):
     s = Script(research=[GOOD, second], verdicts=[verdict("revise")])
     r = ask(s)
-    assert (r.outcome, r.message, trace(r)) == (second.outcome, second.message, (4, 1, None))
+    expected = second.message if second.outcome == "clarify" else abstention("es")
+    assert (r.outcome, r.message, trace(r)) == (second.outcome, expected, (4, 1, None))
     assert len(s.verifier_calls) == 1
 
 
