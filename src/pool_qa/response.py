@@ -1,4 +1,4 @@
-from pool_qa.checks import MARKER, markers, normalize_ws
+from pool_qa.checks import MARKER, markers, quote_span
 from pool_qa.contract import (
     AskResponse, Chunk, Citation, IntakeResult, Outcome, ResearchResult, Trace, VerifierResult,
 )
@@ -38,7 +38,7 @@ def build_response(
         Citation(
             id=cid, chunk_id=chunk_id, document=retrieved[chunk_id].document,
             page=retrieved[chunk_id].page, page_in_language=None,
-            section=retrieved[chunk_id].section, quote=normalize_ws(quotes[chunk_id]),
+            section=retrieved[chunk_id].section, quote=quote_span(quotes[chunk_id], retrieved[chunk_id].text),
         )
         for chunk_id, cid in ids.items()
     ]

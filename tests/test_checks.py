@@ -1,5 +1,5 @@
 from fakes import make_chunk
-from pool_qa.checks import citation_check, markers, normalize_ws, truncate_history
+from pool_qa.checks import citation_check, markers, quote_span, truncate_history
 from pool_qa.contract import DraftCitation, ResearchResult, Turn
 
 P11 = make_chunk("user_manual-p11-1", "1. Remove the pre-filter cap by unscrewing the nut\nholding it in place (Fig. 5).")
@@ -35,7 +35,9 @@ def test_chunk_not_retrieved():
 
 def test_quote_not_in_chunk():
     d = draft("Text [user_manual-p11-1].", [("user_manual-p11-1", "Remove the filter lid")])
-    assert len(citation_check(d, RETRIEVED)) == 1
+    issues = citation_check(d, RETRIEVED)
+    assert len(issues) == 1
+    assert "Remove the filter lid" in issues[0]
 
 
 def test_empty_quote():
@@ -89,8 +91,16 @@ def test_hyphen_split_word_fails():  # D22 known parser limitation; remove in Ti
     assert len(citation_check(d, RETRIEVED)) == 1
 
 
-def test_normalize_ws():
-    assert normalize_ws(" a\n b\t\tc ") == "a b c"
+def test_quote_span_whitespace_only_difference_returns_raw_span():  # D22
+    assert quote_span("unscrewing the nut holding it", P11.text) == "unscrewing the nut\nholding it"
+
+
+def test_quote_span_hyphen_split_returns_none():  # D22 known parser limitation; remove in Tier 1
+    assert quote_span("correctly connected", P10.text) is None
+
+
+def test_quote_span_blank_returns_none():
+    assert quote_span("   ", P11.text) is None
 
 
 def test_markers_in_order():

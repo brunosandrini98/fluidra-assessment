@@ -1,6 +1,5 @@
 import re
 
-from pool_qa.checks import normalize_ws
 from pool_qa.contract import AskResponse, Chunk
 
 
@@ -12,6 +11,6 @@ def assert_invariants(response: AskResponse, retrieved: dict[str, Chunk]) -> Non
     assert not re.search(r"\[(?!c\d+\])[^\[\]\s]+\]", response.message)
     for c in response.citations:
         assert c.chunk_id in retrieved  # 3
-        assert len(c.quote) <= 200 and c.quote in normalize_ws(retrieved[c.chunk_id].text)  # 4
+        assert len(c.quote) <= 200 and c.quote in retrieved[c.chunk_id].text  # 4
     assert response.warnings == []  # 5
     assert response.trace.revisions in (0, 1)  # 7

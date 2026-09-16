@@ -37,7 +37,7 @@ def test_answer_renumbers_markers_and_builds_citations():
         ("c1", "user_manual-p11-1", 11, "4. START-UP", "user_manual.pdf"),
         ("c2", "user_manual-p12-1", 12, None, "user_manual.pdf"),
     ]
-    assert r.citations[0].quote == "pre-filter cap by unscrewing"
+    assert r.citations[0].quote == "pre-filter cap by\nunscrewing"
     assert all(c.page_in_language is None for c in r.citations)
     assert r.warnings == []
     assert r.trace.model_dump() == {"search_calls": 2, "revisions": 1, "verdict": "pass"}
