@@ -1,7 +1,14 @@
 from eval_stubs import CHUNKS, citation, response
 from pool_qa.eval.gates import (
-    CITATIONS, COMPLETED, FALSE_ANSWERS, ErrorInfo, QuestionResult,
-    citation_issues, compute_gates, outcome_match, tier0_status,
+    CITATIONS,
+    COMPLETED,
+    FALSE_ANSWERS,
+    ErrorInfo,
+    QuestionResult,
+    citation_issues,
+    compute_gates,
+    outcome_match,
+    tier0_status,
 )
 
 
@@ -63,13 +70,18 @@ def test_citation_gate_lists_failures():
 
 
 def test_false_answer_gate():
-    gates = compute_gates([result("t0-04", "abstain", response("answer")), result("t0-05", "refuse", response("refuse"))], CHUNKS)
+    gates = compute_gates(
+        [result("t0-04", "abstain", response("answer")), result("t0-05", "refuse", response("refuse"))], CHUNKS
+    )
     g = gate(gates, FALSE_ANSWERS)
     assert (g.status, g.value, g.failures) == ("fail", "1", ["t0-04: expected abstain, got answer"])
 
 
 def test_errored_question_fails_completed_only():
-    results = [result("t0-01", "answer", response()), result("t0-02", "answer", error=ErrorInfo(type="timeout", detail="slow"))]
+    results = [
+        result("t0-01", "answer", response()),
+        result("t0-02", "answer", error=ErrorInfo(type="timeout", detail="slow")),
+    ]
     gates = compute_gates(results, CHUNKS)
     assert (gate(gates, COMPLETED).status, gate(gates, COMPLETED).value) == ("fail", "1/2")
     assert gate(gates, COMPLETED).failures == ["t0-02: timeout"]
@@ -86,5 +98,9 @@ def test_later_tier_gates_pending_and_ignored():  # D8
 
 
 def test_outcome_match():
-    results = [result("t0-01", "answer", response("abstain")), result("t0-04", "abstain", response("abstain")), result("t0-05", "refuse", error=ErrorInfo(type="timeout", detail=""))]
+    results = [
+        result("t0-01", "answer", response("abstain")),
+        result("t0-04", "abstain", response("abstain")),
+        result("t0-05", "refuse", error=ErrorInfo(type="timeout", detail="")),
+    ]
     assert outcome_match(results) == "1/3"

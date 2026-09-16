@@ -18,10 +18,7 @@ FIGURE = re.compile(r"\(Fig\. (\d+)\)")
 def strip_furniture(pages: dict[int, list[str]]) -> dict[int, list[str]]:
     counts = Counter(line for lines in pages.values() for line in set(lines))
     repeated = {line for line, n in counts.items() if n * 2 >= len(pages)}
-    return {
-        page: [l for l in lines if l not in repeated and l != str(page)]
-        for page, lines in pages.items()
-    }
+    return {page: [l for l in lines if l not in repeated and l != str(page)] for page, lines in pages.items()}
 
 
 def split_sections(
@@ -83,8 +80,7 @@ def build_chunks(pages: dict[int, list[str]]) -> list[Chunk]:
 def read_pages(pdf_path: Path = PDF_PATH) -> dict[int, list[str]]:
     reader = PdfReader(pdf_path)
     return {
-        page: [line.strip() for line in reader.pages[page - 1].extract_text().splitlines()]
-        for page in ENGLISH_PAGES
+        page: [line.strip() for line in reader.pages[page - 1].extract_text().splitlines()] for page in ENGLISH_PAGES
     }
 
 

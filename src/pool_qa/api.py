@@ -43,5 +43,5 @@ async def _timeout(request: Request, exc: RequestTimeout) -> JSONResponse:
 
 
 @app.post("/ask", response_model=AskResponse)
-async def post_ask(request: AskRequest, run=Depends(get_ask)) -> AskResponse:
+async def post_ask(request: AskRequest, run=Depends(get_ask)) -> AskResponse:  # noqa: B008 -- FastAPI DI pattern
     return await run(request)

@@ -2,14 +2,17 @@ from fakes import make_chunk
 from pool_qa.checks import citation_check, markers, quote_span, truncate_history
 from pool_qa.contract import DraftCitation, ResearchResult, Turn
 
-P11 = make_chunk("user_manual-p11-1", "1. Remove the pre-filter cap by unscrewing the nut\nholding it in place (Fig. 5).")
+P11 = make_chunk(
+    "user_manual-p11-1", "1. Remove the pre-filter cap by unscrewing the nut\nholding it in place (Fig. 5)."
+)
 P10 = make_chunk("user_manual-p10-1", "the grounding conductor is correctly con -\nnected. Connect the motor", page=10)
 RETRIEVED = {c.chunk_id: c for c in (P11, P10)}
 
 
 def draft(message, citations, outcome="answer"):
     return ResearchResult(
-        outcome=outcome, message=message,
+        outcome=outcome,
+        message=message,
         citations=[DraftCitation(chunk_id=i, quote=q) for i, q in citations],
     )
 

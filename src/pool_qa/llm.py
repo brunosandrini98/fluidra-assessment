@@ -1,13 +1,11 @@
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 
 from pool_qa.settings import Settings
-
-T = TypeVar("T", bound=BaseModel)
 
 
 class ProviderError(Exception):
@@ -28,7 +26,7 @@ async def invoke(runnable, messages: list) -> Any:
         raise ProviderError(f"{type(exc).__name__}: {exc}") from exc
 
 
-async def structured(
+async def structured[T: BaseModel](
     model, schema: type[T], messages: list, valid: Callable[[T], bool] = lambda _: True
 ) -> T:
     runnable = model.with_structured_output(schema, include_raw=True, method="function_calling")

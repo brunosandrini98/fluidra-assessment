@@ -6,7 +6,12 @@ from pathlib import Path
 
 from pool_qa.contract import AskRequest, GoldenRecord
 from pool_qa.eval.gates import (
-    ErrorInfo, QuestionResult, Report, compute_gates, outcome_match, tier0_status,
+    ErrorInfo,
+    QuestionResult,
+    Report,
+    compute_gates,
+    outcome_match,
+    tier0_status,
 )
 from pool_qa.graph import RequestTimeout, default_agents, make_ask
 from pool_qa.llm import ProviderError
@@ -32,12 +37,17 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
             error = ErrorInfo(type="provider_error", detail=str(exc))
         except RequestTimeout as exc:
             error = ErrorInfo(type="timeout", detail=str(exc))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 -- record any failure per question, don't abort the run
             error = ErrorInfo(type=type(exc).__name__, detail=str(exc))
         print(f"{record.id}: {response.outcome if response else error.type}", file=sys.stderr, flush=True)
-        results.append(QuestionResult(
-            id=record.id, expected_outcome=record.expected_outcome, response=response, error=error,
-        ))
+        results.append(
+            QuestionResult(
+                id=record.id,
+                expected_outcome=record.expected_outcome,
+                response=response,
+                error=error,
+            )
+        )
     return results
 
 
@@ -56,7 +66,9 @@ def render(report: Report) -> str:
 
 
 def main(argv: list[str] | None = None, ask=None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m pool_qa.eval.run", description="Run the golden set and report gates.")
+    parser = argparse.ArgumentParser(
+        prog="python -m pool_qa.eval.run", description="Run the golden set and report gates."
+    )
     parser.add_argument("--golden", type=Path, default=GOLDEN)
     parser.add_argument("--reports-dir", type=Path, default=REPORTS)
     args = parser.parse_args(argv)
@@ -67,15 +79,18 @@ def main(argv: list[str] | None = None, ask=None) -> int:
     if ask is None:
         try:
             ask = make_ask(default_agents(settings), settings)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 -- CLI boundary: report any failure as exit code 2
             print(f"error: {type(exc).__name__}", file=sys.stderr)
             return 2
 
     results = asyncio.run(run_all(records, ask))
     gates = compute_gates(results, chunks)
     report = Report(
-        created_at=datetime.now(UTC), tier0=tier0_status(gates),
-        outcome_match=outcome_match(results), results=results, gates=gates,
+        created_at=datetime.now(UTC),
+        tier0=tier0_status(gates),
+        outcome_match=outcome_match(results),
+        results=results,
+        gates=gates,
     )
     args.reports_dir.mkdir(parents=True, exist_ok=True)
     path = args.reports_dir / f"{report.created_at:%Y%m%dT%H%M%SZ}.json"

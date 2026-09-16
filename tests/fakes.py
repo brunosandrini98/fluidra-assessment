@@ -5,9 +5,16 @@ from pool_qa.contract import Chunk
 
 def make_chunk(chunk_id: str, text: str, page: int = 11, section: str | None = "4. START-UP") -> Chunk:
     return Chunk(
-        chunk_id=chunk_id, document="user_manual.pdf", source_type="manual",
-        effective_date=None, language="en", page=page, section=section,
-        text=text, figure_refs=[], warning_ids=[],
+        chunk_id=chunk_id,
+        document="user_manual.pdf",
+        source_type="manual",
+        effective_date=None,
+        language="en",
+        page=page,
+        section=section,
+        text=text,
+        figure_refs=[],
+        warning_ids=[],
     )
 
 

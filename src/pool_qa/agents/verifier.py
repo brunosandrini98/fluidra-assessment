@@ -16,9 +16,7 @@ Verdict:
 - "abstain": the cited chunks cannot support an answer to the question."""
 
 
-def verifier_messages(
-    question: str, language: str, draft: str, chunks: list[Chunk], pivot: str
-) -> list[BaseMessage]:
+def verifier_messages(question: str, language: str, draft: str, chunks: list[Chunk], pivot: str) -> list[BaseMessage]:
     return [
         SystemMessage(SYSTEM.format(pivot=pivot, language=language)),
         HumanMessage(f"Question:\n{question}\n\nDraft:\n{draft}\n\nCited chunks:\n{render_chunks(chunks)}"),
@@ -29,6 +27,8 @@ async def run_verifier(
     model, pivot: str, question: str, language: str, draft: str, chunks: list[Chunk]
 ) -> VerifierResult:
     return await structured(
-        model, VerifierResult, verifier_messages(question, language, draft, chunks, pivot),
+        model,
+        VerifierResult,
+        verifier_messages(question, language, draft, chunks, pivot),
         valid=lambda r: r.verdict != "revise" or bool(r.issues),
     )

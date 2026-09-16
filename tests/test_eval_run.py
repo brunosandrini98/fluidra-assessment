@@ -51,7 +51,9 @@ def test_answer_where_abstain_or_refuse_expected_fails(tmp_path, qid):
     assert g.status == "fail" and g.failures[0].startswith(f"{qid}: ")
 
 
-@pytest.mark.parametrize("exc, kind", [(ProviderError("down"), "provider_error"), (RequestTimeout("slow"), "timeout")])  # D7
+@pytest.mark.parametrize(
+    "exc, kind", [(ProviderError("down"), "provider_error"), (RequestTimeout("slow"), "timeout")]
+)  # D7
 def test_error_is_recorded_and_run_continues(tmp_path, exc, kind):
     code, report, _ = run(tmp_path, stub({"t0-02": exc}))
     by_id = {r.id: r for r in report.results}
@@ -66,7 +68,16 @@ def test_table(tmp_path, capsys):  # D9
     out = capsys.readouterr().out
     for record in RECORDS:
         assert record.id in out
-    for part in ("expected", "actual", "provider_error", "Outcome match: 4/5", COMPLETED, CITATIONS, "pending", "Tier 0: fail"):
+    for part in (
+        "expected",
+        "actual",
+        "provider_error",
+        "Outcome match: 4/5",
+        COMPLETED,
+        CITATIONS,
+        "pending",
+        "Tier 0: fail",
+    ):
         assert part in out
 
 

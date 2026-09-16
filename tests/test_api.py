@@ -7,7 +7,11 @@ from pool_qa.graph import RequestTimeout
 from pool_qa.llm import ProviderError
 
 RESPONSE = AskResponse(
-    outcome="abstain", language="en", message="No info.", citations=[], warnings=[],
+    outcome="abstain",
+    language="en",
+    message="No info.",
+    citations=[],
+    warnings=[],
     trace=Trace(search_calls=1, revisions=0, verdict=None),
 )
 
@@ -33,12 +37,15 @@ def test_a23_valid_request():
     assert AskResponse.model_validate(r.json()) == RESPONSE
 
 
-@pytest.mark.parametrize("body", [
-    {},
-    {"question": ""},
-    {"question": "   "},
-    {"question": "q", "history": [{"role": "system", "content": "x"}]},
-])
+@pytest.mark.parametrize(
+    "body",
+    [
+        {},
+        {"question": ""},
+        {"question": "   "},
+        {"question": "q", "history": [{"role": "system", "content": "x"}]},
+    ],
+)
 def test_a24_invalid_request(body):
     r = client_with(ok).post("/ask", json=body)
     assert r.status_code == 422
@@ -48,13 +55,17 @@ def test_a24_invalid_request(body):
 def raising(exc):
     async def ask(request):
         raise exc
+
     return ask
 
 
-@pytest.mark.parametrize("exc, status, error", [
-    (ProviderError("overloaded"), 502, "provider_error"),
-    (RequestTimeout("slow"), 504, "timeout"),
-])
+@pytest.mark.parametrize(
+    "exc, status, error",
+    [
+        (ProviderError("overloaded"), 502, "provider_error"),
+        (RequestTimeout("slow"), 504, "timeout"),
+    ],
+)
 def test_a25_error_mapping(exc, status, error):
     r = client_with(raising(exc)).post("/ask", json={"question": "q"})
     assert r.status_code == status

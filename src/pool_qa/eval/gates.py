@@ -74,8 +74,12 @@ def citation_issues(response: AskResponse, chunks: dict[str, Chunk]) -> list[str
 
 def _gate(name: str, threshold: str, value: str, failures: list[str]) -> GateResult:
     return GateResult(
-        name=name, tier=0, threshold=threshold, value=value,
-        status="fail" if failures else "pass", failures=failures,
+        name=name,
+        tier=0,
+        threshold=threshold,
+        value=value,
+        status="fail" if failures else "pass",
+        failures=failures,
     )
 
 
@@ -93,7 +97,9 @@ def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> li
         _gate(COMPLETED, "100%", f"{len(done)}/{len(results)}", errors),
         _gate(FALSE_ANSWERS, "0", str(len(false_answers)), false_answers),
         _gate(
-            CITATIONS, "100%", f"{valid}/{len(done)}",
+            CITATIONS,
+            "100%",
+            f"{valid}/{len(done)}",
             [f"{rid}: {issue}" for rid, issues in citation_failures.items() for issue in issues],
         ),
         *(GateResult(name=n, tier=t, threshold=th, value=None, status="pending") for n, t, th in PENDING),

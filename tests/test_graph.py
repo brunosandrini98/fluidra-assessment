@@ -15,11 +15,13 @@ from pool_qa.settings import Settings
 CHUNK = make_chunk("user_manual-p12-1", "Replace the mechanical seal every year.")
 PROCEED = IntakeResult(decision="proceed", language="es", retrieval_query="seal")
 GOOD = ResearchResult(
-    outcome="answer", message="Cada año [user_manual-p12-1].",
+    outcome="answer",
+    message="Cada año [user_manual-p12-1].",
     citations=[DraftCitation(chunk_id="user_manual-p12-1", quote="every year")],
 )
 BAD = ResearchResult(
-    outcome="answer", message="Cada año [user_manual-p12-1].",
+    outcome="answer",
+    message="Cada año [user_manual-p12-1].",
     citations=[DraftCitation(chunk_id="user_manual-p12-1", quote="every month")],
 )
 CLARIFY = ResearchResult(outcome="clarify", message="¿Qué modelo?", citations=[])
@@ -153,12 +155,24 @@ def test_logs_one_line_per_node(caplog):
     ask(Script(research=[BAD, GOOD], verdicts=[verdict("pass")]))
     lines = [json.loads(rec.message) for rec in caplog.records]
     assert [line["node"] for line in lines] == [
-        "intake", "researcher", "check", "revise", "researcher", "check", "verifier", "build",
+        "intake",
+        "researcher",
+        "check",
+        "revise",
+        "researcher",
+        "check",
+        "verifier",
+        "build",
     ]
     assert len({line["request_id"] for line in lines}) == 1
     assert lines[1] | {"ms": 0} == {
-        "request_id": lines[0]["request_id"], "node": "researcher", "ms": 0,
-        "outcome": "answer", "citations": 1, "search_calls": 2, "tokens": {},
+        "request_id": lines[0]["request_id"],
+        "node": "researcher",
+        "ms": 0,
+        "outcome": "answer",
+        "citations": 1,
+        "search_calls": 2,
+        "tokens": {},
     }
     assert lines[2]["issues"] and lines[6]["verdict"] == "pass" and lines[7]["outcome"] == "answer"
 
@@ -177,7 +191,9 @@ def test_a21_default_agents_use_per_agent_model_strings(monkeypatch):
 
     built = []
     monkeypatch.setattr(graph_module, "chat_model", lambda model, settings: built.append(model) or object())
-    settings = Settings(_env_file=None, intake_model="m-intake", researcher_model="m-research", verifier_model="m-verify")
+    settings = Settings(
+        _env_file=None, intake_model="m-intake", researcher_model="m-research", verifier_model="m-verify"
+    )
     graph_module.default_agents(settings)
     assert built == ["m-intake", "m-research", "m-verify"]
 
