@@ -7,7 +7,7 @@ import pytest
 from fakes import make_chunk
 from invariants import assert_invariants
 from pool_qa.agents.researcher import ResearchRun
-from pool_qa.contract import AskRequest, DraftCitation, IntakeResult, ResearchResult, Turn, VerifierResult
+from pool_qa.contract import AskRequest, Claim, DraftCitation, IntakeResult, ResearchResult, Turn, VerifierResult
 from pool_qa.graph import Agents, RequestTimeout, make_ask
 from pool_qa.phrases import abstention, refusal
 from pool_qa.settings import Settings
@@ -206,3 +206,13 @@ def test_deadline_raises_request_timeout():
 
     with pytest.raises(RequestTimeout):
         ask(Slow(), request_deadline_s=0.05)
+
+
+def test_verifier_pass_with_unsupported_claim_revises_then_abstains():
+    contradiction = VerifierResult(
+        verdict="pass", claims=[Claim(text="Cada año.", supported=False, chunk_ids=[])], issues=[]
+    )
+    s = Script(research=[GOOD, GOOD], verdicts=[contradiction, contradiction])
+    r = ask(s)
+    assert (r.outcome, r.message, trace(r)) == ("abstain", abstention("es"), (4, 1, "revise"))
+    assert s.research_calls[1][1] == ["Unsupported claim: Cada año."]

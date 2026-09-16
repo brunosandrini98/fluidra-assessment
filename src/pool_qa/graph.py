@@ -15,7 +15,7 @@ from pool_qa import retrieval
 from pool_qa.agents.intake import run_intake
 from pool_qa.agents.researcher import ResearchRun, run_researcher
 from pool_qa.agents.verifier import run_verifier
-from pool_qa.checks import citation_check, truncate_history
+from pool_qa.checks import citation_check, enforce_claims, truncate_history
 from pool_qa.contract import (
     AskRequest,
     AskResponse,
@@ -75,7 +75,7 @@ def build_graph(agents: Agents):
     async def verifier(s: State) -> dict:
         research = s["research"]
         chunks = [s["retrieved"][c.chunk_id] for c in research.citations]
-        result = await agents.verifier(s["question"], s["intake"].language, research.message, chunks)
+        result = enforce_claims(await agents.verifier(s["question"], s["intake"].language, research.message, chunks))
         return {"verifier": result, "issues": result.issues}
 
     def revise(s: State) -> dict:

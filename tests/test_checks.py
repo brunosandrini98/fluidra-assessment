@@ -1,6 +1,6 @@
 from fakes import make_chunk
-from pool_qa.checks import citation_check, markers, quote_span, truncate_history
-from pool_qa.contract import DraftCitation, ResearchResult, Turn
+from pool_qa.checks import citation_check, enforce_claims, markers, quote_span, truncate_history
+from pool_qa.contract import Claim, DraftCitation, ResearchResult, Turn, VerifierResult
 
 P11 = make_chunk(
     "user_manual-p11-1", "1. Remove the pre-filter cap by unscrewing the nut\nholding it in place (Fig. 5)."
@@ -131,3 +131,20 @@ def test_truncate_empty():
 def test_truncate_first_user_turn_not_at_index_zero():
     h = [Turn(role="assistant", content="hi"), *turns(8)]
     assert [t.content for t in truncate_history(h, 2)] == ["t0", "t6", "t7"]
+
+
+def test_enforce_claims_pass_with_unsupported_claim_becomes_revise():
+    claims = [Claim(text="Every month.", supported=False, chunk_ids=[])]
+    result = VerifierResult(verdict="pass", claims=claims, issues=[])
+    assert enforce_claims(result) == VerifierResult(
+        verdict="revise", claims=claims, issues=["Unsupported claim: Every month."]
+    )
+
+
+def test_enforce_claims_leaves_consistent_results():
+    supported = VerifierResult(
+        verdict="pass", claims=[Claim(text="Every year.", supported=True, chunk_ids=["c"])], issues=[]
+    )
+    abstain = VerifierResult(verdict="abstain", claims=[Claim(text="x", supported=False, chunk_ids=[])], issues=[])
+    assert enforce_claims(supported) == supported
+    assert enforce_claims(abstain) == abstain

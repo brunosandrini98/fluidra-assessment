@@ -225,3 +225,9 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 **Context:** `pypdf` drops the ● markers of the page 13 troubleshooting matrix, so causes cannot be tied to symptoms. Fig. 4 (page 94) and the installation zones (page 97) hold facts that appear nowhere in the text.
 **Decision:** These are transcribed by hand from the page images into `data/transcriptions.jsonl`: one chunk per troubleshooting symptom, one chunk per figure page. Ingestion replaces the `pypdf` chunks of any transcribed page. Figures the text already covers, and the wiring diagrams, are not transcribed, so no unchecked transcription is cited as the manual.
 **Consequences:** Citation quotes for these chunks come from the transcription, not the PDF text layer. Does not scale; the production equivalent is layout-aware parsing (Docling) or VLM figure descriptions, checked per document family.
+
+## D28 — Verifier pass with an unsupported claim
+2026-09-16 · fixed · extends D4
+
+**Decision:** A Verifier `pass` that marks any claim `supported: false` is treated as `revise`, with each unsupported claim added to `issues`. Enforced in code after the Verifier returns.
+**Consequences:** Code catches self-contradictory verdicts only; whether claims are judged correctly is measured by the eval.
