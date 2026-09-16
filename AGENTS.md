@@ -9,6 +9,7 @@ Multi-agent question answering over pool equipment documents. Python 3.12, `uv`.
 | `DESIGN.md` | Architecture, tiers, evaluation gates, known limitations |
 | `CONTRACT.md` | Schemas, invariants, error format |
 | `DECISIONS.md` | Decisions and rationale; append-only |
+| `DEPLOYMENT.md` | Production deployment target |
 | `eval/golden.jsonl` | Golden questions; dev-owned |
 
 Code conforms to these files. If code and a file disagree, stop and report; do not silently change either.
@@ -22,6 +23,8 @@ uv run ruff check . && uv run ruff format .   # lint and format
 uv run python -m pool_qa.ingest.pypdf_chunks  # regenerate data/chunks.jsonl
 uv run python -m pool_qa.cli "question"       # ask from the CLI (--json, --history FILE)
 uv run uvicorn pool_qa.api:app                # serve POST /ask on :8000
+docker build -t pool-qa .                     # container image
+docker run --rm -p 8000:8000 --env-file .env pool-qa  # serve from the image
 uv run python -m pool_qa.eval.run             # eval report
 ```
 

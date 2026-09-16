@@ -17,6 +17,7 @@ uv run python -m pool_qa.eval.run
 uv run python -m pool_qa.cli "How often should the mechanical seal be replaced?"
 uv run python -m pool_qa.cli "..." --json --history history.json
 uv run uvicorn pool_qa.api:app
+docker build -t pool-qa . && docker run --rm -p 8000:8000 --env-file .env pool-qa
 curl -s localhost:8000/ask -H 'content-type: application/json' -d '{"question": "How do I prime the pump?"}'
 ```
 
@@ -31,4 +32,4 @@ The parsed manual is committed in `data/chunks.jsonl`. Tier 0 chunking is struct
 - `DESIGN.md`: architecture, tiers, evaluation, known limitations
 - `CONTRACT.md`: API and agent schemas
 - `DECISIONS.md`: decision log
-- `DEPLOYMENT.md`: production deployment (written in Tier 0)
+- `DEPLOYMENT.md`: production deployment on AWS (draft)
