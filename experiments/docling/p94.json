@@ -1,0 +1,626 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.10.0",
+  "name": "user_manual",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 4944365386903499914,
+    "filename": "user_manual.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/pictures/1"
+      },
+      {
+        "$ref": "#/texts/16"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "caption",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 206.3747,
+            "t": 320.618,
+            "r": 223.07469999999998,
+            "b": 312.0758609625668,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Fig. 3",
+      "text": "Fig. 3"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 549.1166,
+            "r": 268.19520000000006,
+            "b": 543.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Cebado",
+      "text": "Cebado"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 542.1166,
+            "r": 269.45310000000006,
+            "b": 536.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            7
+          ]
+        }
+      ],
+      "orig": "Priming",
+      "text": "Priming"
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 535.1166,
+            "r": 279.9384000000002,
+            "b": 529.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            11
+          ]
+        }
+      ],
+      "orig": "Remplissage",
+      "text": "Remplissage"
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 528.1166,
+            "r": 283.14720000000005,
+            "b": 522.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            14
+          ]
+        }
+      ],
+      "orig": "Einf\u00fcllstopfen",
+      "text": "Einf\u00fcllstopfen"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 521.1166,
+            "r": 267.4763000000001,
+            "b": 515.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            7
+          ]
+        }
+      ],
+      "orig": "Scarico",
+      "text": "Scarico"
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 514.1166,
+            "r": 264.418,
+            "b": 508.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "Carga",
+      "text": "Carga"
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 507.1166,
+            "r": 266.71049999999997,
+            "b": 501.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "\u03a6\u03bf\u03c1\u03c4\u03af\u03bf",
+      "text": "\u03a6\u03bf\u03c1\u03c4\u03af\u03bf"
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 251.7165,
+            "t": 500.1166,
+            "r": 269.02680000000004,
+            "b": 494.1371026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            7
+          ]
+        }
+      ],
+      "orig": "\u0430\u0433\u0440\u0443\u0437\u043a\u0430",
+      "text": "\u0430\u0433\u0440\u0443\u0437\u043a\u0430"
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "caption",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 206.3747,
+            "t": 47.428999999999974,
+            "r": 223.07469999999998,
+            "b": 38.88686096256686,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Fig. 4",
+      "text": "Fig. 4"
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 179.4699,
+            "t": 234.68650000000002,
+            "r": 216.35430000000005,
+            "b": 228.7070026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            14
+          ]
+        }
+      ],
+      "orig": "Pump / Pompe /",
+      "text": "Pump / Pompe /"
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 178.5637,
+            "t": 227.68650000000002,
+            "r": 217.2597000000001,
+            "b": 221.7070026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            14
+          ]
+        }
+      ],
+      "orig": "Bomba/ Pompa /",
+      "text": "Bomba/ Pompa /"
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 178.0128,
+            "t": 220.68650000000002,
+            "r": 216.71160000000006,
+            "b": 214.7070026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            15
+          ]
+        }
+      ],
+      "orig": "Pumpe / Bomba /",
+      "text": "Pumpe / Bomba /"
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 179.9697,
+            "t": 213.68650000000002,
+            "r": 214.75480000000005,
+            "b": 207.7070026737968,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            15
+          ]
+        }
+      ],
+      "orig": "\u0392\u03cc\u03bc\u03b2\u03b1 / \u041d\u0430\u0441\u043e\u0441 /",
+      "text": "\u0392\u03cc\u03bc\u03b2\u03b1 / \u041d\u0430\u0441\u043e\u0441 /"
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 191.1134,
+            "t": 205.6805,
+            "r": 204.6999,
+            "b": 199.64372742857142,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "\u0642\u0646\u0628\u0644\u0629",
+      "text": "\u0642\u0646\u0628\u0644\u0629"
+    },
+    {
+      "self_ref": "#/texts/15",
+      "parent": {
+        "$ref": "#/pictures/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 154.1698,
+            "t": 172.05349999999999,
+            "r": 160.1492973262032,
+            "b": 151.94669999999996,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            8
+          ]
+        }
+      ],
+      "orig": "Max. 2 m",
+      "text": "Max. 2 m"
+    },
+    {
+      "self_ref": "#/texts/16",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 45.3543,
+            "t": 23.5625,
+            "r": 50.7443,
+            "b": 17.58300267379684,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            2
+          ]
+        }
+      ],
+      "orig": "94",
+      "text": "94"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/0"
+        },
+        {
+          "$ref": "#/texts/1"
+        },
+        {
+          "$ref": "#/texts/2"
+        },
+        {
+          "$ref": "#/texts/3"
+        },
+        {
+          "$ref": "#/texts/4"
+        },
+        {
+          "$ref": "#/texts/5"
+        },
+        {
+          "$ref": "#/texts/6"
+        },
+        {
+          "$ref": "#/texts/7"
+        },
+        {
+          "$ref": "#/texts/8"
+        }
+      ],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 44.43498246534986,
+            "t": 568.1742500821823,
+            "r": 385.18011121555065,
+            "b": 314.66889152967207,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            0
+          ]
+        }
+      ],
+      "captions": [
+        {
+          "$ref": "#/texts/0"
+        }
+      ],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    },
+    {
+      "self_ref": "#/pictures/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        },
+        {
+          "$ref": "#/texts/13"
+        },
+        {
+          "$ref": "#/texts/14"
+        },
+        {
+          "$ref": "#/texts/15"
+        }
+      ],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 94,
+          "bbox": {
+            "l": 44.48372029900268,
+            "t": 295.2532966179559,
+            "r": 384.92764176139923,
+            "b": 41.24043001315738,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            0
+          ]
+        }
+      ],
+      "captions": [
+        {
+          "$ref": "#/texts/9"
+        }
+      ],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "94": {
+      "size": {
+        "width": 420.945,
+        "height": 595.276
+      },
+      "page_no": 94
+    }
+  }
+}

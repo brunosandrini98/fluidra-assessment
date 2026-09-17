@@ -1,0 +1,1965 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.10.0",
+  "name": "user_manual",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 4944365386903499914,
+    "filename": "user_manual.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/62"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 78.5673,
+            "t": 467.8104688,
+            "r": 90.97322656,
+            "b": 462.5218596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 2",
+      "text": "Zone 2"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 320.6673,
+            "t": 467.8104688,
+            "r": 333.07322655999997,
+            "b": 462.5218596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 2",
+      "text": "Zone 2"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 172.6964,
+            "t": 467.8104688,
+            "r": 185.10232655999997,
+            "b": 462.5218596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 1",
+      "text": "Zone 1"
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 119.1982312,
+            "t": 467.85899416,
+            "r": 124.48684032085562,
+            "b": 457.4002,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 218.2886312,
+            "t": 481.15829416,
+            "r": 223.57724032085562,
+            "b": 470.6995,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 190.3574,
+            "t": 505.6742688,
+            "r": 200.64345967999998,
+            "b": 500.3856596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 79.1291,
+            "t": 405.3743688,
+            "r": 89.41515967999999,
+            "b": 400.0857596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 119.7824,
+            "t": 405.3743688,
+            "r": 130.23871768,
+            "b": 400.0857596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,0 m",
+      "text": "2,0 m"
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 282.1133,
+            "t": 405.3743688,
+            "r": 292.56961768,
+            "b": 400.0857596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,0 m",
+      "text": "2,0 m"
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 321.9341,
+            "t": 405.3743688,
+            "r": 332.2201596800001,
+            "b": 400.0857596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 248.7643,
+            "t": 505.6742688,
+            "r": 259.05035967999993,
+            "b": 500.3856596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 172.6964,
+            "t": 401.5353688,
+            "r": 185.10232655999997,
+            "b": 396.2467596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 172.6964,
+            "t": 421.0848688,
+            "r": 185.10232655999997,
+            "b": 415.7962596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 257.9571,
+            "t": 440.0168688,
+            "r": 270.36302656,
+            "b": 434.7282596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 257.957,
+            "t": 467.8104688,
+            "r": 270.36292655999995,
+            "b": 462.5218596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 1",
+      "text": "Zone 1"
+    },
+    {
+      "self_ref": "#/texts/15",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 90.9388,
+            "t": 270.3199688,
+            "r": 101.22485968,
+            "b": 265.03135967914443,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/16",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 123.381,
+            "t": 270.3199688,
+            "r": 133.83731767999998,
+            "b": 265.03135967914443,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,0 m",
+      "text": "2,0 m"
+    },
+    {
+      "self_ref": "#/texts/17",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 123.381,
+            "t": 346.7067688,
+            "r": 133.83731767999998,
+            "b": 341.4181596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,0 m",
+      "text": "2,0 m"
+    },
+    {
+      "self_ref": "#/texts/18",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 115.6306312,
+            "t": 315.66439416000003,
+            "r": 120.91924032085562,
+            "b": 305.2056,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/19",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 168.6678312,
+            "t": 346.58049416,
+            "r": 173.95644032085562,
+            "b": 336.1217,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/20",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 256.0857312,
+            "t": 351.91079416,
+            "r": 261.3743403208556,
+            "b": 341.452,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/21",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 270.6995,
+            "t": 270.3199688,
+            "r": 281.15581768000004,
+            "b": 265.03135967914443,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,0 m",
+      "text": "2,0 m"
+    },
+    {
+      "self_ref": "#/texts/22",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 305.2284,
+            "t": 270.3199688,
+            "r": 315.51445968000013,
+            "b": 265.03135967914443,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/23",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 275.0471,
+            "t": 336.8456688,
+            "r": 285.3331596800001,
+            "b": 331.5570596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/24",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 235.3359,
+            "t": 357.3675688,
+            "r": 245.62195967999997,
+            "b": 352.0789596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "1,5 m",
+      "text": "1,5 m"
+    },
+    {
+      "self_ref": "#/texts/25",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 297.3990312,
+            "t": 315.66439416000003,
+            "r": 302.6876403208556,
+            "b": 305.2056,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            5
+          ]
+        }
+      ],
+      "orig": "2,5 m",
+      "text": "2,5 m"
+    },
+    {
+      "self_ref": "#/texts/26",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 88.8249,
+            "t": 316.3148688,
+            "r": 101.23082656,
+            "b": 311.0262596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 2",
+      "text": "Zone 2"
+    },
+    {
+      "self_ref": "#/texts/27",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 309.9684,
+            "t": 316.3148688,
+            "r": 322.37432655999993,
+            "b": 311.0262596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 2",
+      "text": "Zone 2"
+    },
+    {
+      "self_ref": "#/texts/28",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 195.2323,
+            "t": 333.2653688,
+            "r": 207.63822655999996,
+            "b": 327.9767596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 1",
+      "text": "Zone 1"
+    },
+    {
+      "self_ref": "#/texts/29",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 195.2323,
+            "t": 302.0561688,
+            "r": 207.63822655999996,
+            "b": 296.7675596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/30",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 195.2323,
+            "t": 315.0422688,
+            "r": 207.63822655999996,
+            "b": 309.7536596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/31",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 193.7762,
+            "t": 73.19106880000004,
+            "r": 206.18212655999994,
+            "b": 67.90245967914439,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 2",
+      "text": "Zone 2"
+    },
+    {
+      "self_ref": "#/texts/32",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 324.0271,
+            "t": 235.55566880000003,
+            "r": 348.5950198400001,
+            "b": 230.26705967914438,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            12
+          ]
+        }
+      ],
+      "orig": "Outdoor area",
+      "text": "Outdoor area"
+    },
+    {
+      "self_ref": "#/texts/33",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 193.7762,
+            "t": 102.99936880000001,
+            "r": 206.18212655999994,
+            "b": 97.71075967914436,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 1",
+      "text": "Zone 1"
+    },
+    {
+      "self_ref": "#/texts/34",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 161.2778312,
+            "t": 106.65315183999996,
+            "r": 166.56644032085563,
+            "b": 96.88220000000001,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            4
+          ]
+        }
+      ],
+      "orig": "2,0m",
+      "text": "2,0m"
+    },
+    {
+      "self_ref": "#/texts/35",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 301.5125,
+            "t": 160.36866880000002,
+            "r": 311.28345184,
+            "b": 155.08005967914437,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            4
+          ]
+        }
+      ],
+      "orig": "2,0m",
+      "text": "2,0m"
+    },
+    {
+      "self_ref": "#/texts/36",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 161.2778312,
+            "t": 76.21145072000002,
+            "r": 166.56644032085563,
+            "b": 66.73519999999996,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            4
+          ]
+        }
+      ],
+      "orig": "1,5m",
+      "text": "1,5m"
+    },
+    {
+      "self_ref": "#/texts/37",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 333.6871,
+            "t": 160.36866880000002,
+            "r": 343.1633507200001,
+            "b": 155.08005967914437,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            4
+          ]
+        }
+      ],
+      "orig": "1,5m",
+      "text": "1,5m"
+    },
+    {
+      "self_ref": "#/texts/38",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 193.7762,
+            "t": 154.2724688,
+            "r": 206.18212655999994,
+            "b": 148.98385967914442,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/39",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 275.8302312,
+            "t": 164.25610856000003,
+            "r": 281.1188403208556,
+            "b": 139.1737,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            13
+          ]
+        }
+      ],
+      "orig": "Feet cleaning",
+      "text": "Feet cleaning"
+    },
+    {
+      "self_ref": "#/texts/40",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 281.3702312,
+            "t": 157.91972655999996,
+            "r": 286.6588403208556,
+            "b": 145.5138,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "Zone 0",
+      "text": "Zone 0"
+    },
+    {
+      "self_ref": "#/texts/41",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 94.5869,
+            "t": 215.3021688,
+            "r": 96.1347,
+            "b": 210.01236509635976,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/42",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 96.5328,
+            "t": 215.3021688,
+            "r": 116.03063975999999,
+            "b": 210.01355967914435,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "2 = 3,5 m",
+      "text": "2 = 3,5 m"
+    },
+    {
+      "self_ref": "#/texts/43",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 270.8801,
+            "t": 78.84316879999994,
+            "r": 272.4279,
+            "b": 73.5533650963597,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/44",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 272.826,
+            "t": 78.84316879999994,
+            "r": 292.3238397600002,
+            "b": 73.5545596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "2 = 3,5 m",
+      "text": "2 = 3,5 m"
+    },
+    {
+      "self_ref": "#/texts/45",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 295.763,
+            "t": 114.6400688,
+            "r": 297.3108,
+            "b": 109.35026509635975,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/46",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 297.7089,
+            "t": 114.6400688,
+            "r": 317.20673976000023,
+            "b": 109.3514596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "2 = 3,5 m",
+      "text": "2 = 3,5 m"
+    },
+    {
+      "self_ref": "#/texts/47",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 255.2025,
+            "t": 203.86326880000001,
+            "r": 256.7503,
+            "b": 198.57346509635977,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/48",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 257.1007,
+            "t": 203.86326880000001,
+            "r": 276.4846312800002,
+            "b": 198.57465967914436,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "1 = 2,0 m",
+      "text": "1 = 2,0 m"
+    },
+    {
+      "self_ref": "#/texts/49",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 126.2797,
+            "t": 203.86326880000001,
+            "r": 127.8275,
+            "b": 198.57346509635977,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/50",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 128.1779,
+            "t": 203.86326880000001,
+            "r": 147.5618312800001,
+            "b": 198.57465967914436,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "1 = 2,0 m",
+      "text": "1 = 2,0 m"
+    },
+    {
+      "self_ref": "#/texts/51",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 283.1941,
+            "t": 190.80956879999997,
+            "r": 284.7419,
+            "b": 185.51976509635972,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/52",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 285.0923,
+            "t": 190.80956879999997,
+            "r": 304.4761312800002,
+            "b": 185.52095967914437,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "1 = 2,0 m",
+      "text": "1 = 2,0 m"
+    },
+    {
+      "self_ref": "#/texts/53",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 125.9375,
+            "t": 164.5673688,
+            "r": 128.0548904,
+            "b": 159.2775650963597,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "S",
+      "text": "S"
+    },
+    {
+      "self_ref": "#/texts/54",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 128.4369,
+            "t": 164.5673688,
+            "r": 130.643729,
+            "b": 159.2787596791444,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "1",
+      "text": "1"
+    },
+    {
+      "self_ref": "#/texts/55",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 99.7071,
+            "t": 139.53646879999997,
+            "r": 101.8244904,
+            "b": 134.24666509635972,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "S",
+      "text": "S"
+    },
+    {
+      "self_ref": "#/texts/56",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 102.2479,
+            "t": 139.53646879999997,
+            "r": 104.7367624,
+            "b": 134.24785967914437,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "2",
+      "text": "2"
+    },
+    {
+      "self_ref": "#/texts/57",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 127.0871,
+            "t": 102.9724688,
+            "r": 128.63490000000002,
+            "b": 97.68266509635976,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            1
+          ]
+        }
+      ],
+      "orig": "r",
+      "text": "r"
+    },
+    {
+      "self_ref": "#/texts/58",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 128.9853,
+            "t": 102.9724688,
+            "r": 148.36923128000006,
+            "b": 97.68385967914435,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            9
+          ]
+        }
+      ],
+      "orig": "1 = 2,0 m",
+      "text": "1 = 2,0 m"
+    },
+    {
+      "self_ref": "#/texts/59",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 44.7491,
+            "t": 562.5601,
+            "r": 376.26939999999945,
+            "b": 524.8721748663102,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            543
+          ]
+        }
+      ],
+      "orig": "INSTALLATION ZONES - Areas highlighted: the pump may be installed here / ZONES D'INSTALLATION - Espaces mentionn\u00e9s : la pompe peut y \u00eatre install\u00e9e ZONAS DE INSTALACI\u00d3N - Zonas marcadas: la bomba puede instalarse aqu\u00ed / ZONE DI INSTALLAZIONE - Aree evidenziate: qui \u00e8 possibile installare la pompa INSTALLATIONSBEREICHE - Markierte Bereiche: hier darf die Pumpe installiert werden  / ZONAS DE INSTALA\u00c7\u00c3O - Zonas destacadas: a bomba pode ser instalada aqui \u0396\u038f\u039d\u0395\u03a3 \u0395\u0393\u039a\u0391\u03a4\u0386\u03a3\u03a4\u0391\u03a3\u0397\u03a3 - \u03a0\u03b5\u03c1\u03b9\u03bf\u03c7\u03ad\u03c2 \u03c0\u03bf\u03c5 \u03b5\u03c0\u03b9\u03c3\u03b7\u03bc\u03b1\u03af\u03bd\u03bf\u03bd\u03c4\u03b1\u03b9: \u03b7 \u03b1\u03bd\u03c4\u03bb\u03af\u03b1 \u03bc\u03c0\u03bf\u03c1\u03b5\u03af \u03bd\u03b1 \u03b5\u03b3\u03ba\u03b1\u03c4\u03b1\u03c3\u03c4\u03b1\u03b8\u03b5\u03af \u03b5\u03b4\u03ce /",
+      "text": "INSTALLATION ZONES - Areas highlighted: the pump may be installed here / ZONES D'INSTALLATION - Espaces mentionn\u00e9s : la pompe peut y \u00eatre install\u00e9e ZONAS DE INSTALACI\u00d3N - Zonas marcadas: la bomba puede instalarse aqu\u00ed / ZONE DI INSTALLAZIONE - Aree evidenziate: qui \u00e8 possibile installare la pompa INSTALLATIONSBEREICHE - Markierte Bereiche: hier darf die Pumpe installiert werden  / ZONAS DE INSTALA\u00c7\u00c3O - Zonas destacadas: a bomba pode ser instalada aqui \u0396\u038f\u039d\u0395\u03a3 \u0395\u0393\u039a\u0391\u03a4\u0386\u03a3\u03a4\u0391\u03a3\u0397\u03a3 - \u03a0\u03b5\u03c1\u03b9\u03bf\u03c7\u03ad\u03c2 \u03c0\u03bf\u03c5 \u03b5\u03c0\u03b9\u03c3\u03b7\u03bc\u03b1\u03af\u03bd\u03bf\u03bd\u03c4\u03b1\u03b9: \u03b7 \u03b1\u03bd\u03c4\u03bb\u03af\u03b1 \u03bc\u03c0\u03bf\u03c1\u03b5\u03af \u03bd\u03b1 \u03b5\u03b3\u03ba\u03b1\u03c4\u03b1\u03c3\u03c4\u03b1\u03b8\u03b5\u03af \u03b5\u03b4\u03ce /"
+    },
+    {
+      "self_ref": "#/texts/60",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 74.0525,
+            "t": 522.5601,
+            "r": 221.79721999999984,
+            "b": 514.8721748663102,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            63
+          ]
+        }
+      ],
+      "orig": "\u0417\u041e\u041d\u042b \u0423\u0421\u0422\u0410\u041d\u041e\u0412\u041a\u0418 - \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u044b: \u043d\u0430\u0441\u043e\u0441 \u043c\u043e\u0436\u0435\u0442 \u0431\u044b\u0442\u044c \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d \u0437\u0434\u0435\u0441\u044c  /",
+      "text": "\u0417\u041e\u041d\u042b \u0423\u0421\u0422\u0410\u041d\u041e\u0412\u041a\u0418 - \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u044b: \u043d\u0430\u0441\u043e\u0441 \u043c\u043e\u0436\u0435\u0442 \u0431\u044b\u0442\u044c \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d \u0437\u0434\u0435\u0441\u044c  /"
+    },
+    {
+      "self_ref": "#/texts/61",
+      "parent": {
+        "$ref": "#/pictures/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 221.3585,
+            "t": 522.0621,
+            "r": 346.8679599999998,
+            "b": 512.8224017142857,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            60
+          ]
+        }
+      ],
+      "orig": "\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u062a\u0631\u0643\u064a - \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u0638\u0644\u0644\u0629: \u064a\u0645\u0643\u0646  \u062a\u0631 \u0643\u064a\u0628  \u0627\u0644\u0645\u0636\u062e \u0629  \u0647 \u0646 \u0627",
+      "text": "\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u062a\u0631\u0643\u064a - \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u0638\u0644\u0644\u0629: \u064a\u0645\u0643\u0646  \u062a\u0631 \u0643\u064a\u0628  \u0627\u0644\u0645\u0636\u062e \u0629  \u0647 \u0646 \u0627"
+    },
+    {
+      "self_ref": "#/texts/62",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 370.3084,
+            "t": 23.5625,
+            "r": 375.5934,
+            "b": 17.58300267379684,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            2
+          ]
+        }
+      ],
+      "orig": "97",
+      "text": "97"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/0"
+        },
+        {
+          "$ref": "#/texts/1"
+        },
+        {
+          "$ref": "#/texts/2"
+        },
+        {
+          "$ref": "#/texts/3"
+        },
+        {
+          "$ref": "#/texts/4"
+        },
+        {
+          "$ref": "#/texts/5"
+        },
+        {
+          "$ref": "#/texts/6"
+        },
+        {
+          "$ref": "#/texts/7"
+        },
+        {
+          "$ref": "#/texts/8"
+        },
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        },
+        {
+          "$ref": "#/texts/13"
+        },
+        {
+          "$ref": "#/texts/14"
+        },
+        {
+          "$ref": "#/texts/15"
+        },
+        {
+          "$ref": "#/texts/16"
+        },
+        {
+          "$ref": "#/texts/17"
+        },
+        {
+          "$ref": "#/texts/18"
+        },
+        {
+          "$ref": "#/texts/19"
+        },
+        {
+          "$ref": "#/texts/20"
+        },
+        {
+          "$ref": "#/texts/21"
+        },
+        {
+          "$ref": "#/texts/22"
+        },
+        {
+          "$ref": "#/texts/23"
+        },
+        {
+          "$ref": "#/texts/24"
+        },
+        {
+          "$ref": "#/texts/25"
+        },
+        {
+          "$ref": "#/texts/26"
+        },
+        {
+          "$ref": "#/texts/27"
+        },
+        {
+          "$ref": "#/texts/28"
+        },
+        {
+          "$ref": "#/texts/29"
+        },
+        {
+          "$ref": "#/texts/30"
+        },
+        {
+          "$ref": "#/texts/31"
+        },
+        {
+          "$ref": "#/texts/32"
+        },
+        {
+          "$ref": "#/texts/33"
+        },
+        {
+          "$ref": "#/texts/34"
+        },
+        {
+          "$ref": "#/texts/35"
+        },
+        {
+          "$ref": "#/texts/36"
+        },
+        {
+          "$ref": "#/texts/37"
+        },
+        {
+          "$ref": "#/texts/38"
+        },
+        {
+          "$ref": "#/texts/39"
+        },
+        {
+          "$ref": "#/texts/40"
+        },
+        {
+          "$ref": "#/texts/41"
+        },
+        {
+          "$ref": "#/texts/42"
+        },
+        {
+          "$ref": "#/texts/43"
+        },
+        {
+          "$ref": "#/texts/44"
+        },
+        {
+          "$ref": "#/texts/45"
+        },
+        {
+          "$ref": "#/texts/46"
+        },
+        {
+          "$ref": "#/texts/47"
+        },
+        {
+          "$ref": "#/texts/48"
+        },
+        {
+          "$ref": "#/texts/49"
+        },
+        {
+          "$ref": "#/texts/50"
+        },
+        {
+          "$ref": "#/texts/51"
+        },
+        {
+          "$ref": "#/texts/52"
+        },
+        {
+          "$ref": "#/texts/53"
+        },
+        {
+          "$ref": "#/texts/54"
+        },
+        {
+          "$ref": "#/texts/55"
+        },
+        {
+          "$ref": "#/texts/56"
+        },
+        {
+          "$ref": "#/texts/57"
+        },
+        {
+          "$ref": "#/texts/58"
+        },
+        {
+          "$ref": "#/texts/59"
+        },
+        {
+          "$ref": "#/texts/60"
+        },
+        {
+          "$ref": "#/texts/61"
+        }
+      ],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 97,
+          "bbox": {
+            "l": 0.23381629317998887,
+            "t": 566.9294014339191,
+            "r": 420.24977833654987,
+            "b": 40.73286861998281,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            0
+          ]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "97": {
+      "size": {
+        "width": 420.945,
+        "height": 595.276
+      },
+      "page_no": 97
+    }
+  }
+}
