@@ -32,7 +32,7 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
     for record in records:
         response, error = None, None
         try:
-            response = await ask(AskRequest(question=record.question))
+            response = await ask(AskRequest(question=record.question, history=record.history))
         except ProviderError as exc:
             error = ErrorInfo(type="provider_error", detail=str(exc))
         except RequestTimeout as exc:
@@ -43,6 +43,8 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
         results.append(
             QuestionResult(
                 id=record.id,
+                category=record.category,
+                language=record.language,
                 expected_outcome=record.expected_outcome,
                 expected_pages=record.expected_pages,
                 response=response,

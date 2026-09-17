@@ -111,8 +111,10 @@ class VerifierResult(BaseModel):
 
 class GoldenRecord(BaseModel):
     id: str
+    category: str
     question: str
     language: str
     expected_outcome: Outcome
     expected_pages: list[int]
     must_include: list[str]
+    history: list[Turn] = []

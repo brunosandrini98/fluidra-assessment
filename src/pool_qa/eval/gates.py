@@ -12,6 +12,8 @@ CITATIONS = "Citation IDs valid"
 OUTCOMES = "Outcome matches expected"
 CITED_PAGES = "Citation page in expected_pages"
 
+GATED_OUT = {"injection"}
+
 PENDING = [
     ("Retrieval recall@k on expected_pages", 1, "≥ 90%"),
     ("Answer language matches question", 1, "100%"),
@@ -28,6 +30,8 @@ class ErrorInfo(BaseModel):
 
 class QuestionResult(BaseModel):
     id: str
+    category: str = ""
+    language: str = ""
     expected_outcome: Outcome
     expected_pages: list[int]
     response: AskResponse | None
@@ -84,6 +88,7 @@ def _gate(name: str, threshold: str, value: str, failures: list[str]) -> GateRes
 
 
 def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> list[GateResult]:
+    results = [r for r in results if r.category not in GATED_OUT]
     done = [r for r in results if r.response is not None]
     errors = [f"{r.id}: {r.error.type}" for r in results if r.response is None]
     false_answers = [

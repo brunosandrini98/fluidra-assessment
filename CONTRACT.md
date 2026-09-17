@@ -186,9 +186,12 @@ out: AskResponse
 ```
 GoldenRecord:
   id: str
+  category: str                    # procedure | component_table | troubleshooting | figure | safety |
+                                   # non_english | not_in_manual | off_topic | ambiguous | injection
   question: str
   language: str
   expected_outcome: Outcome
   expected_pages: list[int]        # empty unless answer
   must_include: list[str]          # key facts, including key safety warning; empty unless answer
+  history: list[Turn] = []         # sent with the question
 ```

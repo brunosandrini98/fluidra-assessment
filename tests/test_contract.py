@@ -44,11 +44,13 @@ EXPECTED_FIELDS = {
     "VerifierResult": ["verdict", "claims", "issues"],
     "GoldenRecord": [
         "id",
+        "category",
         "question",
         "language",
         "expected_outcome",
         "expected_pages",
         "must_include",
+        "history",
     ],
 }
 

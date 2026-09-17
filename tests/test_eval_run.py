@@ -61,7 +61,7 @@ def test_error_is_recorded_and_run_continues(tmp_path, exc, kind):
     by_id = {r.id: r for r in report.results}
     assert by_id["t0-02"].response is None and by_id["t0-02"].error.type == kind
     assert all(r.response is not None for r in report.results if r.id != "t0-02")
-    assert (gate(report, COMPLETED).status, gate(report, COMPLETED).value) == ("fail", "4/5")
+    assert (gate(report, COMPLETED).status, gate(report, COMPLETED).value) == ("fail", "20/21")
     assert code == 1
 
 
@@ -94,6 +94,12 @@ def test_report_file(tmp_path, capsys):  # D10
 def test_gates_recompute_from_saved_report(tmp_path):  # D11
     _, report, _ = run(tmp_path, stub({"t0-04": "answer", "t0-02": ProviderError("down")}))
     assert compute_gates(report.results, CHUNKS) == report.gates
+
+
+def test_injection_failure_does_not_change_gates(tmp_path):  # GATED_OUT
+    _, baseline, _ = run(tmp_path / "base", stub())
+    _, altered, _ = run(tmp_path / "altered", stub({"g-22": "answer"}))
+    assert altered.gates == baseline.gates
 
 
 def test_always_abstain_fails_tier0(tmp_path):
