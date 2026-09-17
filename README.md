@@ -2,9 +2,30 @@
 
 Multi-agent question answering over pool equipment documents for pool professionals. Answers cite the pool equipment documents or abstain.
 
+- **Intake:** refuses off-topic questions, detects the language, writes the search query.
+- **Researcher:** searches the manual and drafts an answer with verbatim quoted citations, or asks one clarifying question, or abstains.
+- **Verifier:** checks each claim against its cited chunks with fresh context; passes, requests one revision, or abstains.
+
+Citation IDs and quotes are checked in code before the Verifier runs. See `DESIGN.md` § Architecture.
+
+## Scope and assumptions
+
+- Users are certified pool professionals. The tool is advisory; the technician remains responsible for the work.
+- No general knowledge: the system cites the documents or abstains.
+- One example manual today; the design assumes many brands, languages and document types later (`DESIGN.md` § Known limitations).
+
 ## Status
 
-Tier 0 complete: contract models, chunked English pages with hand transcriptions, BM25 search, the three-agent graph, `POST /ask`, the CLI, and the eval command. Latest eval (2026-09-16, one run per question): Tier 0 pass — 5/5 outcomes, citations valid, cited pages in expected pages. The run before it failed t0-03 (abstained) and was followed by a Researcher prompt change. In both runs every answer needed its one allowed revision, so results are not yet stable. See `DESIGN.md` § Tiers.
+Features are planned in tiers (`DESIGN.md` § Tiers). Tier 0 is functional: a question goes through the three agents over the English pages of the manual, from the CLI or `POST /ask`, with an eval command and a container image. Later tiers improve ingestion, retrieval and evaluation behind the same interfaces.
+
+## Work in progress
+
+Draft PRs, not merged:
+
+- `feat/eval-coverage`: broaden the eval so results say more about retrieval and answer quality across question types.
+- `spike/docling`: test whether layout-aware parsing can replace the hand transcriptions of tables and figures.
+
+Built with AI coding agents: `AGENTS.md` holds their instructions, `DECISIONS.md` the decisions, and each PR one batch of work.
 
 ## Run
 
@@ -32,4 +53,4 @@ The parsed manual is committed in `data/chunks.jsonl`. Tier 0 chunking is struct
 - `DESIGN.md`: architecture, tiers, evaluation, known limitations
 - `CONTRACT.md`: API and agent schemas
 - `DECISIONS.md`: decision log
-- `DEPLOYMENT.md`: production deployment on AWS (draft)
+- `DEPLOYMENT.md`: production deployment on AWS
