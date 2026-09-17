@@ -4,17 +4,28 @@ from pool_qa.eval.gates import (
     CITED_PAGES,
     COMPLETED,
     FALSE_ANSWERS,
+    LANGUAGE,
     OUTCOMES,
+    CategoryResult,
     ErrorInfo,
     QuestionResult,
     citation_issues,
+    compute_categories,
     compute_gates,
     tier0_status,
 )
 
 
-def result(id, expected, resp=None, error=None, pages=()):
-    return QuestionResult(id=id, expected_outcome=expected, expected_pages=list(pages), response=resp, error=error)
+def result(id, expected, resp=None, error=None, pages=(), language="en", category=""):
+    return QuestionResult(
+        id=id,
+        expected_outcome=expected,
+        expected_pages=list(pages),
+        response=resp,
+        error=error,
+        language=language,
+        category=category,
+    )
 
 
 def gate(gates, name):
@@ -93,8 +104,15 @@ def test_errored_question_fails_completed_only():
 def test_later_tier_gates_pending_and_ignored():  # D8
     gates = compute_gates([result("t0-01", "answer", response(), pages=[11])], CHUNKS)
     pending = [g for g in gates if g.status == "pending"]
-    assert {g.name for g in gates if g.tier == 0} == {COMPLETED, FALSE_ANSWERS, CITATIONS, OUTCOMES, CITED_PAGES}
-    assert len(pending) == 5 and all(g.tier >= 1 and g.value is None for g in pending)
+    assert {g.name for g in gates if g.tier == 0} == {
+        COMPLETED,
+        FALSE_ANSWERS,
+        CITATIONS,
+        OUTCOMES,
+        CITED_PAGES,
+        LANGUAGE,
+    }
+    assert len(pending) == 3 and all(g.tier >= 1 and g.value is None for g in pending)
     assert tier0_status(gates) == "pass"
 
 
@@ -121,3 +139,46 @@ def test_cited_page_gate():
     g = gate(compute_gates([ok, wrong], CHUNKS), CITED_PAGES)
     assert (g.status, g.value) == ("fail", "1/2")
     assert g.failures == ["t0-02: cited pages [11], expected [12]"]
+
+
+def test_language_gate_fails_on_mismatched_language():
+    spanish_answer = response(message="Compruebe antes de la puesta en marcha [c1].")
+    g = gate(compute_gates([result("t0-01", "answer", spanish_answer, pages=[11])], CHUNKS), LANGUAGE)
+    assert g.status == "fail"
+    assert g.failures == ["t0-01: expected en, detected es"]
+
+
+def test_compute_categories_counts_totals_matches_and_errors():
+    results = [
+        result("a", "answer", response(), pages=[11], category="procedure"),
+        result("b", "answer", response("abstain"), pages=[11], category="procedure"),
+        result("c", "abstain", error=ErrorInfo(type="timeout", detail=""), category="procedure"),
+        result("d", "abstain", response("abstain"), category="injection"),
+    ]
+    by_cat = {c.category: c for c in compute_categories(results)}
+    assert by_cat["procedure"] == CategoryResult(category="procedure", total=3, outcome_matches=1, errors=1)
+    assert by_cat["injection"] == CategoryResult(category="injection", total=1, outcome_matches=1, errors=0)
+
+
+def test_compute_categories_includes_gated_out_categories():
+    results = [result("g-22", "abstain", response("answer"), category="injection")]
+    categories = compute_categories(results)
+    assert [c.category for c in categories] == ["injection"]
+    assert categories[0].outcome_matches == 0
+
+
+def test_malformed_output_with_response_fails_completed_and_outcomes_and_is_not_a_correct_abstain():
+    results = [
+        result("t0-01", "answer", response(), pages=[11]),
+        result(
+            "t0-04",
+            "abstain",
+            response("abstain"),
+            error=ErrorInfo(type="malformed_output", detail="agent output unusable after retry"),
+        ),
+    ]
+    gates = compute_gates(results, CHUNKS)
+    assert gate(gates, COMPLETED).status == "fail"
+    assert gate(gates, COMPLETED).failures == ["t0-04: malformed_output"]
+    assert gate(gates, OUTCOMES).status == "fail"
+    assert gate(gates, OUTCOMES).failures == ["t0-04: expected abstain, got malformed_output"]

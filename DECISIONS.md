@@ -269,3 +269,15 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 
 **Decision:** `Dockerfile` on `python:3.12-slim-bookworm` with a pinned `uv`; dependencies from `uv.lock` without dev packages; image contains `src/` and `data/chunks.jsonl` only; runs `uvicorn` as a non-root user on port 8000. The API key is passed as an environment variable at run time.
 **Consequences:** Rebuild the image when `data/chunks.jsonl` changes.
+
+## D34 — Eval coverage experiment
+2026-09-17 · provisional · extends D25, D31
+
+**Decision:**
+- Golden records carry `category` and `history`. Category `injection` (prompt injection, forged history) is reported and excluded from gates.
+- `Retrieval recall@5 on expected_pages` gate ≥ 90%: `search(question, en, search_k)` with no LLM, on English answer questions. recall@1 and MRR reported.
+- Live retrieval: share of answer questions, all languages, whose expected page was among the chunks the Researcher retrieved; read from the Researcher log line, which carries retrieved chunk IDs. Reported, not gated.
+- `Answer language matches question` gate 100%: `lingua`, restricted to the manual's 9 languages.
+- Malformed output, read from node logs, is an eval error (`malformed_output`) although the app returns `abstain`.
+- Report records commit, settings with model IDs, golden SHA-256, and tokens and latency per question.
+**Consequences:** Recall does not cover non-English questions while the index is English only. `must_include` stays unscored. Results come from one run and are indicative.

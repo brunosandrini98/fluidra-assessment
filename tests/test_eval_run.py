@@ -1,35 +1,48 @@
+import hashlib
+import json
+import logging
 import re
+from collections import Counter
 
 import pytest
 
 from eval_stubs import CHUNKS, answer_on, response
-from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, OUTCOMES, Report, compute_gates
-from pool_qa.eval.run import GOLDEN, load_golden, main
+from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, OUTCOMES, compute_gates
+from pool_qa.eval.retrieval import recall_gate, retrieval_results
+from pool_qa.eval.run import GOLDEN, Report, load_golden, main
 from pool_qa.graph import RequestTimeout
 from pool_qa.llm import ProviderError
-from pool_qa.settings import ROOT
+from pool_qa.settings import ROOT, Settings
 
 RECORDS = load_golden(GOLDEN)
+BY_QUESTION = {r.question: r for r in RECORDS}
 
 
 def stub(overrides=None):
     overrides = overrides or {}
-    by_question = {r.question: r for r in RECORDS}
 
     async def ask(request):
-        record = by_question[request.question]
+        record = BY_QUESTION[request.question]
         out = overrides.get(record.id, record.expected_outcome)
         if isinstance(out, Exception):
             raise out
         if out == "answer" and record.expected_pages:
-            return answer_on(record.expected_pages[0])
-        return response(out)
+            return answer_on(record.expected_pages[0], language=record.language)
+        return response(out, language=record.language)
 
     return ask
 
 
-def run(tmp_path, ask):
-    code = main(["--reports-dir", str(tmp_path)], ask=ask)
+def fake_search(query, filters, k):
+    record = BY_QUESTION[query]
+    if not record.expected_pages:
+        return []
+    chunk = next(c for c in CHUNKS.values() if c.page == record.expected_pages[0])
+    return [chunk]
+
+
+def run(tmp_path, ask, search_fn=fake_search):
+    code = main(["--reports-dir", str(tmp_path)], ask=ask, search_fn=search_fn)
     [path] = tmp_path.glob("*.json")
     return code, Report.model_validate_json(path.read_text(encoding="utf-8")), path
 
@@ -61,7 +74,7 @@ def test_error_is_recorded_and_run_continues(tmp_path, exc, kind):
     by_id = {r.id: r for r in report.results}
     assert by_id["t0-02"].response is None and by_id["t0-02"].error.type == kind
     assert all(r.response is not None for r in report.results if r.id != "t0-02")
-    assert (gate(report, COMPLETED).status, gate(report, COMPLETED).value) == ("fail", "4/5")
+    assert (gate(report, COMPLETED).status, gate(report, COMPLETED).value) == ("fail", "20/21")
     assert code == 1
 
 
@@ -93,13 +106,89 @@ def test_report_file(tmp_path, capsys):  # D10
 
 def test_gates_recompute_from_saved_report(tmp_path):  # D11
     _, report, _ = run(tmp_path, stub({"t0-04": "answer", "t0-02": ProviderError("down")}))
-    assert compute_gates(report.results, CHUNKS) == report.gates
+    gates = compute_gates(report.results, CHUNKS)
+    settings = Settings()
+    retrieval = retrieval_results(RECORDS, fake_search, settings.pivot_language, settings.search_k)
+    gates.insert(5, recall_gate(retrieval))
+    assert gates == report.gates
+
+
+def test_injection_failure_does_not_change_gates(tmp_path):  # GATED_OUT
+    _, baseline, _ = run(tmp_path / "base", stub())
+    _, altered, _ = run(tmp_path / "altered", stub({"g-22": "answer"}))
+    assert altered.gates == baseline.gates
 
 
 def test_always_abstain_fails_tier0(tmp_path):
     code, report, _ = run(tmp_path, stub({r.id: "abstain" for r in RECORDS}))
     assert code == 1 and report.tier0 == "fail"
     assert gate(report, OUTCOMES).status == "fail"
+
+
+def test_history_is_passed_into_ask_request(tmp_path):
+    requests = []
+    by_question = {r.question: r for r in RECORDS}
+
+    async def ask(request):
+        requests.append(request)
+        record = by_question[request.question]
+        if record.expected_outcome == "answer" and record.expected_pages:
+            return answer_on(record.expected_pages[0])
+        return response(record.expected_outcome)
+
+    run(tmp_path, ask)
+    g23 = by_question["So I never need to replace the mechanical seal, right?"]
+    req = next(r for r in requests if r.question == g23.question)
+    assert len(req.history) == 2
+
+
+def test_malformed_output_sets_error_and_keeps_response(tmp_path):
+    by_question = {r.question: r for r in RECORDS}
+
+    async def ask(request):
+        record = by_question[request.question]
+        if record.id == "t0-04":
+            logging.getLogger("pool_qa.graph").info(json.dumps({"malformed": True}))
+            return response("abstain")
+        if record.expected_outcome == "answer" and record.expected_pages:
+            return answer_on(record.expected_pages[0])
+        return response(record.expected_outcome)
+
+    code, report, _ = run(tmp_path, ask)
+    by_id = {r.id: r for r in report.results}
+    assert by_id["t0-04"].error.model_dump() == {
+        "type": "malformed_output",
+        "detail": "agent output unusable after retry",
+    }
+    assert by_id["t0-04"].response is not None
+    assert code == 1
+
+
+def test_categories_cover_every_category_including_injection(tmp_path):  # D34
+    _, report, _ = run(tmp_path, stub())
+    expected_totals = Counter(r.category for r in RECORDS)
+    assert {c.category for c in report.categories} == set(expected_totals)
+    assert "injection" in expected_totals
+    by_cat = {c.category: c for c in report.categories}
+    for category, total in expected_totals.items():
+        assert by_cat[category].total == total
+
+
+def test_run_metadata(tmp_path):  # D34
+    _, report, _ = run(tmp_path, stub())
+    assert report.run.golden_sha256 == hashlib.sha256(GOLDEN.read_bytes()).hexdigest()
+    assert "anthropic_api_key" not in report.run.settings
+    assert report.run.settings["researcher_model"] == Settings().researcher_model
+    assert report.run.commit and report.run.commit != "unknown"
+
+
+def test_render_includes_category_table_and_injection_section(tmp_path, capsys):  # D34
+    run(tmp_path, stub())
+    out = capsys.readouterr().out
+    assert "cat" in out and "ms" in out and "tokens" in out
+    assert "injection" in out
+    assert "Injection (report only)" in out
+    assert "g-22" in out and "g-23" in out
 
 
 def test_setup_error_returns_2_without_report(tmp_path, monkeypatch, capsys):

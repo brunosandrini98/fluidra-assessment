@@ -1,25 +1,66 @@
 import argparse
 import asyncio
+import hashlib
 import logging
+import subprocess
 import sys
+import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 
-from pool_qa.contract import AskRequest, GoldenRecord
+from pydantic import BaseModel
+
+from pool_qa.contract import AskRequest, Chunk, GoldenRecord
+from pool_qa.eval.capture import capture, malformed, retrieved, tokens
 from pool_qa.eval.gates import (
+    CategoryResult,
     ErrorInfo,
+    GateResult,
     QuestionResult,
-    Report,
+    compute_categories,
     compute_gates,
     tier0_status,
 )
+from pool_qa.eval.retrieval import (
+    RetrievalResult,
+    live_retrieval,
+    mrr,
+    recall_at,
+    recall_gate,
+    retrieval_results,
+)
 from pool_qa.graph import RequestTimeout, default_agents, make_ask
 from pool_qa.llm import ProviderError
-from pool_qa.retrieval import load_chunks
+from pool_qa.retrieval import load_chunks, search
 from pool_qa.settings import ROOT, Settings
 
 GOLDEN = ROOT / "eval" / "golden.jsonl"
 REPORTS = ROOT / "eval" / "reports"
+
+
+class RetrievalSummary(BaseModel):
+    k: int
+    recall_at_1: float
+    recall_at_5: float
+    mrr: float
+    results: list[RetrievalResult]
+
+
+class RunInfo(BaseModel):
+    commit: str
+    golden_sha256: str
+    settings: dict
+
+
+class Report(BaseModel):
+    created_at: datetime
+    tier0: Literal["pass", "fail"]
+    run: RunInfo
+    results: list[QuestionResult]
+    gates: list[GateResult]
+    categories: list[CategoryResult]
+    retrieval: RetrievalSummary
 
 
 def load_golden(path: Path) -> list[GoldenRecord]:
@@ -27,46 +68,102 @@ def load_golden(path: Path) -> list[GoldenRecord]:
         return [GoldenRecord.model_validate_json(line) for line in f if line.strip()]
 
 
+def git_commit() -> str:
+    try:
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True, cwd=ROOT
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True, cwd=ROOT
+            ).stdout.strip()
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return f"{head}+dirty" if dirty else head
+
+
+def run_info(golden_path: Path, settings: Settings) -> RunInfo:
+    return RunInfo(
+        commit=git_commit(),
+        golden_sha256=hashlib.sha256(golden_path.read_bytes()).hexdigest(),
+        settings=settings.model_dump(mode="json", exclude={"anthropic_api_key"}),
+    )
+
+
 async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
     results = []
     for record in records:
         response, error = None, None
-        try:
-            response = await ask(AskRequest(question=record.question))
-        except ProviderError as exc:
-            error = ErrorInfo(type="provider_error", detail=str(exc))
-        except RequestTimeout as exc:
-            error = ErrorInfo(type="timeout", detail=str(exc))
-        except Exception as exc:  # noqa: BLE001 -- record any failure per question, don't abort the run
-            error = ErrorInfo(type=type(exc).__name__, detail=str(exc))
+        start = time.perf_counter()
+        with capture() as cap:
+            try:
+                response = await ask(AskRequest(question=record.question, history=record.history))
+            except ProviderError as exc:
+                error = ErrorInfo(type="provider_error", detail=str(exc))
+            except RequestTimeout as exc:
+                error = ErrorInfo(type="timeout", detail=str(exc))
+            except Exception as exc:  # noqa: BLE001 -- record any failure per question, don't abort the run
+                error = ErrorInfo(type=type(exc).__name__, detail=str(exc))
+        latency_ms = round((time.perf_counter() - start) * 1000)
+        if response is not None and malformed(cap.records):
+            error = ErrorInfo(type="malformed_output", detail="agent output unusable after retry")
         print(f"{record.id}: {response.outcome if response else error.type}", file=sys.stderr, flush=True)
         results.append(
             QuestionResult(
                 id=record.id,
+                category=record.category,
+                language=record.language,
                 expected_outcome=record.expected_outcome,
                 expected_pages=record.expected_pages,
                 response=response,
                 error=error,
+                tokens=tokens(cap.records),
+                latency_ms=latency_ms,
+                retrieved=retrieved(cap.records),
             )
         )
     return results
 
 
-def render(report: Report) -> str:
-    lines = [f"{'id':<8}{'expected':<10}{'actual':<10}citations / error"]
+def _total_tokens(usage: dict[str, dict[str, int]]) -> int:
+    return sum(bucket["input"] + bucket["output"] for bucket in usage.values())
+
+
+def render(report: Report, chunks: dict[str, Chunk]) -> str:
+    lines = [f"{'id':<8}{'cat':<16}{'expected':<10}{'actual':<10}{'ms':<8}{'tokens':<8}citations / error"]
     for r in report.results:
         actual, detail = (r.response.outcome, len(r.response.citations)) if r.response else ("error", r.error.type)
-        lines.append(f"{r.id:<8}{r.expected_outcome:<10}{actual:<10}{detail}")
+        ms = r.latency_ms if r.latency_ms is not None else "-"
+        lines.append(
+            f"{r.id:<8}{r.category:<16}{r.expected_outcome:<10}{actual:<10}{ms!s:<8}{_total_tokens(r.tokens):<8}{detail}"
+        )
+    lines.append("")
+    lines.append(f"{'category':<16}{'total':<7}{'outcome_matches':<17}errors")
+    for c in report.categories:
+        lines.append(f"{c.category:<16}{c.total:<7}{c.outcome_matches:<17}{c.errors}")
     lines.append("")
     lines.append(f"{'gate':<42}{'tier':<6}{'threshold':<11}{'value':<8}status")
     for g in report.gates:
         lines.append(f"{g.name:<42}{g.tier:<6}{g.threshold:<11}{g.value or '-':<8}{g.status}")
         lines += [f"  - {failure}" for failure in g.failures]
+    r = report.retrieval
+    lines.append(f"recall@1 {r.recall_at_1:.2f}  recall@5 {r.recall_at_5:.2f}  MRR {r.mrr:.2f}")
+    hits, total, misses = live_retrieval(report.results, chunks)
+    lines.append(f"Expected page retrieved (live run): {hits}/{total}")
+    lines += [f"  - {miss}" for miss in misses]
+    lines.append("")
+    lines.append("Injection (report only)")
+    for r in report.results:
+        if r.category != "injection":
+            continue
+        actual = r.response.outcome if r.response else f"error: {r.error.type}"
+        lines.append(f"  - {r.id}: expected {r.expected_outcome}, actual {actual}")
     lines += ["", f"Tier 0: {report.tier0}"]
     return "\n".join(lines)
 
 
-def main(argv: list[str] | None = None, ask=None) -> int:
+def main(argv: list[str] | None = None, ask=None, search_fn=search) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m pool_qa.eval.run", description="Run the golden set and report gates."
     )
@@ -86,16 +183,27 @@ def main(argv: list[str] | None = None, ask=None) -> int:
 
     results = asyncio.run(run_all(records, ask))
     gates = compute_gates(results, chunks)
+    retrieval = retrieval_results(records, search_fn, settings.pivot_language, settings.search_k)
+    gates.insert(5, recall_gate(retrieval))
     report = Report(
         created_at=datetime.now(UTC),
         tier0=tier0_status(gates),
+        run=run_info(args.golden, settings),
         results=results,
         gates=gates,
+        categories=compute_categories(results),
+        retrieval=RetrievalSummary(
+            k=settings.search_k,
+            recall_at_1=recall_at(retrieval, 1),
+            recall_at_5=recall_at(retrieval, 5),
+            mrr=mrr(retrieval),
+            results=retrieval,
+        ),
     )
     args.reports_dir.mkdir(parents=True, exist_ok=True)
     path = args.reports_dir / f"{report.created_at:%Y%m%dT%H%M%SZ}.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
-    print(render(report))
+    print(render(report, chunks))
     print(f"\nReport: {path}")
     return 0 if report.tier0 == "pass" else 1
 

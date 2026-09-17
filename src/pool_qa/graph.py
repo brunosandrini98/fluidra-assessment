@@ -152,6 +152,7 @@ def summary(s: State, update: dict) -> dict:
             "outcome": research.outcome,
             "citations": len(research.citations),
             "search_calls": update["search_calls"] - s["search_calls"],
+            "retrieved": sorted(update["retrieved"]),
         }
     if "issues" in update:
         out["issues"] = update["issues"]
