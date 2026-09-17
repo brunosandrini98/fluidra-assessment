@@ -4,6 +4,7 @@ from pool_qa.eval.gates import (
     CITED_PAGES,
     COMPLETED,
     FALSE_ANSWERS,
+    LANGUAGE,
     OUTCOMES,
     ErrorInfo,
     QuestionResult,
@@ -13,8 +14,10 @@ from pool_qa.eval.gates import (
 )
 
 
-def result(id, expected, resp=None, error=None, pages=()):
-    return QuestionResult(id=id, expected_outcome=expected, expected_pages=list(pages), response=resp, error=error)
+def result(id, expected, resp=None, error=None, pages=(), language="en"):
+    return QuestionResult(
+        id=id, expected_outcome=expected, expected_pages=list(pages), response=resp, error=error, language=language
+    )
 
 
 def gate(gates, name):
@@ -93,8 +96,15 @@ def test_errored_question_fails_completed_only():
 def test_later_tier_gates_pending_and_ignored():  # D8
     gates = compute_gates([result("t0-01", "answer", response(), pages=[11])], CHUNKS)
     pending = [g for g in gates if g.status == "pending"]
-    assert {g.name for g in gates if g.tier == 0} == {COMPLETED, FALSE_ANSWERS, CITATIONS, OUTCOMES, CITED_PAGES}
-    assert len(pending) == 4 and all(g.tier >= 1 and g.value is None for g in pending)
+    assert {g.name for g in gates if g.tier == 0} == {
+        COMPLETED,
+        FALSE_ANSWERS,
+        CITATIONS,
+        OUTCOMES,
+        CITED_PAGES,
+        LANGUAGE,
+    }
+    assert len(pending) == 3 and all(g.tier >= 1 and g.value is None for g in pending)
     assert tier0_status(gates) == "pass"
 
 
@@ -121,6 +131,13 @@ def test_cited_page_gate():
     g = gate(compute_gates([ok, wrong], CHUNKS), CITED_PAGES)
     assert (g.status, g.value) == ("fail", "1/2")
     assert g.failures == ["t0-02: cited pages [11], expected [12]"]
+
+
+def test_language_gate_fails_on_mismatched_language():
+    spanish_answer = response(message="Compruebe antes de la puesta en marcha [c1].")
+    g = gate(compute_gates([result("t0-01", "answer", spanish_answer, pages=[11])], CHUNKS), LANGUAGE)
+    assert g.status == "fail"
+    assert g.failures == ["t0-01: expected en, detected es"]
 
 
 def test_malformed_output_with_response_fails_completed_and_outcomes_and_is_not_a_correct_abstain():

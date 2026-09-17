@@ -25,8 +25,8 @@ def stub(overrides=None):
         if isinstance(out, Exception):
             raise out
         if out == "answer" and record.expected_pages:
-            return answer_on(record.expected_pages[0])
-        return response(out)
+            return answer_on(record.expected_pages[0], language=record.language)
+        return response(out, language=record.language)
 
     return ask
 

@@ -11,6 +11,7 @@ dependencies = [
     "langchain>=1.4.0",
     "langchain-anthropic>=1.7.2",
     "langgraph>=1.2.11",
+    "lingua-language-detector>=2.2.0",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
     "pypdf>=6.18.1",
