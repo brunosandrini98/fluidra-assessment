@@ -174,6 +174,7 @@ def test_logs_one_line_per_node(caplog):
         "outcome": "answer",
         "citations": 1,
         "search_calls": 2,
+        "retrieved": [CHUNK.chunk_id],
         "tokens": {},
     }
     assert lines[2]["issues"] and lines[6]["verdict"] == "pass" and lines[7]["outcome"] == "answer"

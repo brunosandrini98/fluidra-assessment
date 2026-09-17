@@ -121,3 +121,20 @@ def test_cited_page_gate():
     g = gate(compute_gates([ok, wrong], CHUNKS), CITED_PAGES)
     assert (g.status, g.value) == ("fail", "1/2")
     assert g.failures == ["t0-02: cited pages [11], expected [12]"]
+
+
+def test_malformed_output_with_response_fails_completed_and_outcomes_and_is_not_a_correct_abstain():
+    results = [
+        result("t0-01", "answer", response(), pages=[11]),
+        result(
+            "t0-04",
+            "abstain",
+            response("abstain"),
+            error=ErrorInfo(type="malformed_output", detail="agent output unusable after retry"),
+        ),
+    ]
+    gates = compute_gates(results, CHUNKS)
+    assert gate(gates, COMPLETED).status == "fail"
+    assert gate(gates, COMPLETED).failures == ["t0-04: malformed_output"]
+    assert gate(gates, OUTCOMES).status == "fail"
+    assert gate(gates, OUTCOMES).failures == ["t0-04: expected abstain, got malformed_output"]

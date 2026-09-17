@@ -36,6 +36,9 @@ class QuestionResult(BaseModel):
     expected_pages: list[int]
     response: AskResponse | None
     error: ErrorInfo | None
+    tokens: dict[str, dict[str, int]] = {}
+    latency_ms: int | None = None
+    retrieved: list[str] = []
 
 
 class GateResult(BaseModel):
@@ -89,8 +92,8 @@ def _gate(name: str, threshold: str, value: str, failures: list[str]) -> GateRes
 
 def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> list[GateResult]:
     results = [r for r in results if r.category not in GATED_OUT]
-    done = [r for r in results if r.response is not None]
-    errors = [f"{r.id}: {r.error.type}" for r in results if r.response is None]
+    done = [r for r in results if r.error is None]
+    errors = [f"{r.id}: {r.error.type}" for r in results if r.error is not None]
     false_answers = [
         f"{r.id}: expected {r.expected_outcome}, got answer"
         for r in done
@@ -99,9 +102,9 @@ def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> li
     citation_failures = {r.id: citation_issues(r.response, chunks) for r in done}
     valid = sum(1 for issues in citation_failures.values() if not issues)
     outcome_failures = [
-        f"{r.id}: expected {r.expected_outcome}, got {r.response.outcome if r.response else r.error.type}"
+        f"{r.id}: expected {r.expected_outcome}, got {r.error.type if r.error else r.response.outcome}"
         for r in results
-        if r.response is None or r.response.outcome != r.expected_outcome
+        if r.error is not None or r.response.outcome != r.expected_outcome
     ]
     hits = len(results) - len(outcome_failures)
     answers = [r for r in done if r.expected_outcome == "answer" and r.response.outcome == "answer"]

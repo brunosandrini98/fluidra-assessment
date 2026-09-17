@@ -2,10 +2,12 @@ import argparse
 import asyncio
 import logging
 import sys
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
 from pool_qa.contract import AskRequest, GoldenRecord
+from pool_qa.eval.capture import capture, malformed, retrieved, tokens
 from pool_qa.eval.gates import (
     ErrorInfo,
     QuestionResult,
@@ -31,14 +33,19 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
     results = []
     for record in records:
         response, error = None, None
-        try:
-            response = await ask(AskRequest(question=record.question, history=record.history))
-        except ProviderError as exc:
-            error = ErrorInfo(type="provider_error", detail=str(exc))
-        except RequestTimeout as exc:
-            error = ErrorInfo(type="timeout", detail=str(exc))
-        except Exception as exc:  # noqa: BLE001 -- record any failure per question, don't abort the run
-            error = ErrorInfo(type=type(exc).__name__, detail=str(exc))
+        start = time.perf_counter()
+        with capture() as cap:
+            try:
+                response = await ask(AskRequest(question=record.question, history=record.history))
+            except ProviderError as exc:
+                error = ErrorInfo(type="provider_error", detail=str(exc))
+            except RequestTimeout as exc:
+                error = ErrorInfo(type="timeout", detail=str(exc))
+            except Exception as exc:  # noqa: BLE001 -- record any failure per question, don't abort the run
+                error = ErrorInfo(type=type(exc).__name__, detail=str(exc))
+        latency_ms = round((time.perf_counter() - start) * 1000)
+        if response is not None and malformed(cap.records):
+            error = ErrorInfo(type="malformed_output", detail="agent output unusable after retry")
         print(f"{record.id}: {response.outcome if response else error.type}", file=sys.stderr, flush=True)
         results.append(
             QuestionResult(
@@ -49,6 +56,9 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
                 expected_pages=record.expected_pages,
                 response=response,
                 error=error,
+                tokens=tokens(cap.records),
+                latency_ms=latency_ms,
+                retrieved=retrieved(cap.records),
             )
         )
     return results

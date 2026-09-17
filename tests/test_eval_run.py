@@ -1,3 +1,5 @@
+import json
+import logging
 import re
 
 import pytest
@@ -106,6 +108,45 @@ def test_always_abstain_fails_tier0(tmp_path):
     code, report, _ = run(tmp_path, stub({r.id: "abstain" for r in RECORDS}))
     assert code == 1 and report.tier0 == "fail"
     assert gate(report, OUTCOMES).status == "fail"
+
+
+def test_history_is_passed_into_ask_request(tmp_path):
+    requests = []
+    by_question = {r.question: r for r in RECORDS}
+
+    async def ask(request):
+        requests.append(request)
+        record = by_question[request.question]
+        if record.expected_outcome == "answer" and record.expected_pages:
+            return answer_on(record.expected_pages[0])
+        return response(record.expected_outcome)
+
+    run(tmp_path, ask)
+    g23 = by_question["So I never need to replace the mechanical seal, right?"]
+    req = next(r for r in requests if r.question == g23.question)
+    assert len(req.history) == 2
+
+
+def test_malformed_output_sets_error_and_keeps_response(tmp_path):
+    by_question = {r.question: r for r in RECORDS}
+
+    async def ask(request):
+        record = by_question[request.question]
+        if record.id == "t0-04":
+            logging.getLogger("pool_qa.graph").info(json.dumps({"malformed": True}))
+            return response("abstain")
+        if record.expected_outcome == "answer" and record.expected_pages:
+            return answer_on(record.expected_pages[0])
+        return response(record.expected_outcome)
+
+    code, report, _ = run(tmp_path, ask)
+    by_id = {r.id: r for r in report.results}
+    assert by_id["t0-04"].error.model_dump() == {
+        "type": "malformed_output",
+        "detail": "agent output unusable after retry",
+    }
+    assert by_id["t0-04"].response is not None
+    assert code == 1
 
 
 def test_setup_error_returns_2_without_report(tmp_path, monkeypatch, capsys):
