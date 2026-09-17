@@ -5,21 +5,22 @@ import re
 import pytest
 
 from eval_stubs import CHUNKS, answer_on, response
-from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, OUTCOMES, Report, compute_gates
-from pool_qa.eval.run import GOLDEN, load_golden, main
+from pool_qa.eval.gates import CITATIONS, COMPLETED, FALSE_ANSWERS, OUTCOMES, compute_gates
+from pool_qa.eval.retrieval import recall_gate, retrieval_results
+from pool_qa.eval.run import GOLDEN, Report, load_golden, main
 from pool_qa.graph import RequestTimeout
 from pool_qa.llm import ProviderError
-from pool_qa.settings import ROOT
+from pool_qa.settings import ROOT, Settings
 
 RECORDS = load_golden(GOLDEN)
+BY_QUESTION = {r.question: r for r in RECORDS}
 
 
 def stub(overrides=None):
     overrides = overrides or {}
-    by_question = {r.question: r for r in RECORDS}
 
     async def ask(request):
-        record = by_question[request.question]
+        record = BY_QUESTION[request.question]
         out = overrides.get(record.id, record.expected_outcome)
         if isinstance(out, Exception):
             raise out
@@ -30,8 +31,16 @@ def stub(overrides=None):
     return ask
 
 
-def run(tmp_path, ask):
-    code = main(["--reports-dir", str(tmp_path)], ask=ask)
+def fake_search(query, filters, k):
+    record = BY_QUESTION[query]
+    if not record.expected_pages:
+        return []
+    chunk = next(c for c in CHUNKS.values() if c.page == record.expected_pages[0])
+    return [chunk]
+
+
+def run(tmp_path, ask, search_fn=fake_search):
+    code = main(["--reports-dir", str(tmp_path)], ask=ask, search_fn=search_fn)
     [path] = tmp_path.glob("*.json")
     return code, Report.model_validate_json(path.read_text(encoding="utf-8")), path
 
@@ -95,7 +104,11 @@ def test_report_file(tmp_path, capsys):  # D10
 
 def test_gates_recompute_from_saved_report(tmp_path):  # D11
     _, report, _ = run(tmp_path, stub({"t0-04": "answer", "t0-02": ProviderError("down")}))
-    assert compute_gates(report.results, CHUNKS) == report.gates
+    gates = compute_gates(report.results, CHUNKS)
+    settings = Settings()
+    retrieval = retrieval_results(RECORDS, fake_search, settings.pivot_language, settings.search_k)
+    gates.insert(5, recall_gate(retrieval))
+    assert gates == report.gates
 
 
 def test_injection_failure_does_not_change_gates(tmp_path):  # GATED_OUT

@@ -5,23 +5,50 @@ import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 
-from pool_qa.contract import AskRequest, GoldenRecord
+from pydantic import BaseModel
+
+from pool_qa.contract import AskRequest, Chunk, GoldenRecord
 from pool_qa.eval.capture import capture, malformed, retrieved, tokens
 from pool_qa.eval.gates import (
     ErrorInfo,
+    GateResult,
     QuestionResult,
-    Report,
     compute_gates,
     tier0_status,
 )
+from pool_qa.eval.retrieval import (
+    RetrievalResult,
+    live_retrieval,
+    mrr,
+    recall_at,
+    recall_gate,
+    retrieval_results,
+)
 from pool_qa.graph import RequestTimeout, default_agents, make_ask
 from pool_qa.llm import ProviderError
-from pool_qa.retrieval import load_chunks
+from pool_qa.retrieval import load_chunks, search
 from pool_qa.settings import ROOT, Settings
 
 GOLDEN = ROOT / "eval" / "golden.jsonl"
 REPORTS = ROOT / "eval" / "reports"
+
+
+class RetrievalSummary(BaseModel):
+    k: int
+    recall_at_1: float
+    recall_at_5: float
+    mrr: float
+    results: list[RetrievalResult]
+
+
+class Report(BaseModel):
+    created_at: datetime
+    tier0: Literal["pass", "fail"]
+    results: list[QuestionResult]
+    gates: list[GateResult]
+    retrieval: RetrievalSummary
 
 
 def load_golden(path: Path) -> list[GoldenRecord]:
@@ -64,7 +91,7 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
     return results
 
 
-def render(report: Report) -> str:
+def render(report: Report, chunks: dict[str, Chunk]) -> str:
     lines = [f"{'id':<8}{'expected':<10}{'actual':<10}citations / error"]
     for r in report.results:
         actual, detail = (r.response.outcome, len(r.response.citations)) if r.response else ("error", r.error.type)
@@ -74,11 +101,16 @@ def render(report: Report) -> str:
     for g in report.gates:
         lines.append(f"{g.name:<42}{g.tier:<6}{g.threshold:<11}{g.value or '-':<8}{g.status}")
         lines += [f"  - {failure}" for failure in g.failures]
+    r = report.retrieval
+    lines.append(f"recall@1 {r.recall_at_1:.2f}  recall@5 {r.recall_at_5:.2f}  MRR {r.mrr:.2f}")
+    hits, total, misses = live_retrieval(report.results, chunks)
+    lines.append(f"Expected page retrieved (live run): {hits}/{total}")
+    lines += [f"  - {miss}" for miss in misses]
     lines += ["", f"Tier 0: {report.tier0}"]
     return "\n".join(lines)
 
 
-def main(argv: list[str] | None = None, ask=None) -> int:
+def main(argv: list[str] | None = None, ask=None, search_fn=search) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m pool_qa.eval.run", description="Run the golden set and report gates."
     )
@@ -98,16 +130,25 @@ def main(argv: list[str] | None = None, ask=None) -> int:
 
     results = asyncio.run(run_all(records, ask))
     gates = compute_gates(results, chunks)
+    retrieval = retrieval_results(records, search_fn, settings.pivot_language, settings.search_k)
+    gates.insert(5, recall_gate(retrieval))
     report = Report(
         created_at=datetime.now(UTC),
         tier0=tier0_status(gates),
         results=results,
         gates=gates,
+        retrieval=RetrievalSummary(
+            k=settings.search_k,
+            recall_at_1=recall_at(retrieval, 1),
+            recall_at_5=recall_at(retrieval, 5),
+            mrr=mrr(retrieval),
+            results=retrieval,
+        ),
     )
     args.reports_dir.mkdir(parents=True, exist_ok=True)
     path = args.reports_dir / f"{report.created_at:%Y%m%dT%H%M%SZ}.json"
     path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
-    print(render(report))
+    print(render(report, chunks))
     print(f"\nReport: {path}")
     return 0 if report.tier0 == "pass" else 1
 

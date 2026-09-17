@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -11,11 +10,11 @@ FALSE_ANSWERS = "Answered where abstain/refuse expected"
 CITATIONS = "Citation IDs valid"
 OUTCOMES = "Outcome matches expected"
 CITED_PAGES = "Citation page in expected_pages"
+RECALL = "Retrieval recall@5 on expected_pages"
 
 GATED_OUT = {"injection"}
 
 PENDING = [
-    ("Retrieval recall@k on expected_pages", 1, "≥ 90%"),
     ("Answer language matches question", 1, "100%"),
     ("Unsupported claims (LLM judge)", 1, "0"),
     ("must_include coverage (LLM judge)", 1, "≥ 90%"),
@@ -48,13 +47,6 @@ class GateResult(BaseModel):
     value: str | None
     status: Literal["pass", "fail", "pending"]
     failures: list[str] = []
-
-
-class Report(BaseModel):
-    created_at: datetime
-    tier0: Literal["pass", "fail"]
-    results: list[QuestionResult]
-    gates: list[GateResult]
 
 
 def citation_issues(response: AskResponse, chunks: dict[str, Chunk]) -> list[str]:

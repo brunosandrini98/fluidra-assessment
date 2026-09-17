@@ -94,7 +94,7 @@ def test_later_tier_gates_pending_and_ignored():  # D8
     gates = compute_gates([result("t0-01", "answer", response(), pages=[11])], CHUNKS)
     pending = [g for g in gates if g.status == "pending"]
     assert {g.name for g in gates if g.tier == 0} == {COMPLETED, FALSE_ANSWERS, CITATIONS, OUTCOMES, CITED_PAGES}
-    assert len(pending) == 5 and all(g.tier >= 1 and g.value is None for g in pending)
+    assert len(pending) == 4 and all(g.tier >= 1 and g.value is None for g in pending)
     assert tier0_status(gates) == "pass"
 
 
