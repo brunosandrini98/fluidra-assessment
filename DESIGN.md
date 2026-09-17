@@ -91,16 +91,16 @@ Command: `uv run python -m pool_qa.eval.run`. Prints a table, writes a JSON repo
 | Outcome matches expected | code | ≥ 13/14 | 0 |
 | Answered where abstain/refuse expected | code | 0 | 0 |
 | Citation IDs valid | code | 100% | 0 |
-| Retrieval recall@k on `expected_pages` | code | ≥ 90% | 1 |
+| Retrieval recall@5 (k = `search_k`) on `expected_pages`, searched with the golden question, English answer questions | code | ≥ 90% | 0 |
 | Citation page in `expected_pages` | code | ≥ 90% | 0 |
-| Answer language matches question | code | 100% | 1 |
+| Answer language matches question | code | 100% | 0 |
 | Unsupported claims (claim counts) | LLM judge | 0 | 1 |
 | `must_include` coverage | LLM judge | ≥ 90% | 1 |
 | Judge–human agreement on ~5 labelled answers | LLM judge vs dev | reported | 2 |
 
 Gates not reachable in the current tier are reported as pending. The eval judge is separate from the Verifier.
 
-Golden set composition (Tier 1): procedure 2, component table 1, troubleshooting matrix 2, figure reference 1, safety 2 (key warning in `must_include`), non-English 2, not in manual 2, off-topic 1, ambiguous 1.
+Golden set composition: procedure 3, component table 2, troubleshooting matrix 3, figure reference 2, safety 2, non-English 3, not in manual 3, off-topic 2, ambiguous 1 (21 gated). Injection and forged-history cases: reported, not gated (2).
 
 ## Known limitations
 
@@ -119,7 +119,7 @@ Simplifications built into this design, and what changes at scale.
 | Verifier and eval judge share model family with the Researcher | Different-family judge; periodic human labelling |
 | Stateless server: no sessions, no audit trail | Server-side sessions with persisted traces |
 | Chunking validated on one manual only | Chunk quality checked per new document family before indexing |
-| 14 golden questions: directional, not statistically significant | Larger set built from real user questions |
+| 21 gated golden questions: directional, not statistically significant | Larger set built from real user questions |
 | Eval is one run per question on nondeterministic models; results are not stable behaviour | Repeated runs per question with pass rates |
 | No auth, rate limiting, or tracing | Provided by the target platform (see deployment document) |
 
