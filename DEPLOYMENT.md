@@ -4,7 +4,7 @@ How this service would run in production on AWS. **Today** marks what the reposi
 
 ## 1. Scope
 
-- Deployed unit: the `pool_qa` API (`POST /ask`), called by Fluidra's existing software for pool professionals. No standalone chat frontend.
+- Deployed unit: the `pool_qa` API (`POST /ask`), called by Fluidra's existing software for pool professionals. A standalone frontend could call the same API later; it would move user login, CORS and feedback collection to that frontend and raise abuse exposure.
 - Users: pool professionals and support staff. Answers cite the documents or abstain; the technician remains responsible for the work.
 - Corpus today: one manual, English pages indexed. Target: many brands, product lines, languages and document types, with service bulletins superseding manuals.
 - **Today:** a container image (`Dockerfile`) serving the stateless API, configured by environment variables, with CI running lint and tests.
@@ -17,16 +17,18 @@ flowchart LR
     W --> F[ECS Fargate<br/>pool_qa container, 2+ tasks, multi-AZ]
     F --> B[Bedrock<br/>Claude models]
     F --> K[Bedrock Knowledge Base]
+    F --> D[(Conversation store<br/>DynamoDB, TTL)]
     S[(S3 documents<br/>versioned)] --> J[Ingestion pipeline] --> K
     F --> O[CloudWatch logs + metrics<br/>OTel traces]
     E[ECR image] --> F
 ```
 
 - **Region:** one EU region; Bedrock models through EU cross-region inference (*to verify*: model availability and that data stays in the EU).
-- **Compute:** ECS Fargate. The service is stateless and I/O-bound, so tasks scale on concurrent requests, not CPU. AgentCore Runtime is the alternative if Fluidra standardises on it; the LangGraph graph would move unchanged (*to verify*).
-- **Entry:** ALB with WAF. A request can run up to the 180 s deadline, which exceeds API Gateway's default integration timeout (*to verify* current limits), so the ALB idle timeout is set above the deadline.
+- **Compute:** ECS Fargate. Tasks hold no state and are I/O-bound, so any task serves any turn and tasks scale on concurrent requests, not CPU. AgentCore Runtime is the alternative if the platform standardises on it; the LangGraph graph would move unchanged (*to verify*).
+- **Entry:** ALB with WAF. A request can run up to the 180 s deadline, which exceeds API Gateway's default integration timeout (*to verify* current limits), so the ALB idle timeout is set above the deadline. Production streams progress to the caller or runs requests as async jobs; a synchronous request held up to 180 s is a Tier 0 simplification.
 - **Models:** Bedrock replaces the Anthropic API. Tasks use an IAM role; no API keys.
 - **Retrieval:** Bedrock Knowledge Base behind the existing `search()` interface.
+- **Conversation state:** held server-side in a managed store, keyed by conversation and technician, expired per the retention policy. The client sends a conversation ID and the new message; the server loads history, so policies such as the clarification limit cannot be bypassed.
 
 ## 3. From repo to production
 
@@ -37,7 +39,7 @@ flowchart LR
 | `search(query, filters, k)` | In-memory BM25 over `data/chunks.jsonl` | Knowledge Base retrieve with metadata filters; hybrid search (*to verify*). Citation and quote checks keep working on returned chunk text |
 | Corpus | Committed JSONL, loaded at startup | Versioned index built by the ingestion pipeline |
 | Config and secrets | `pydantic-settings`, `.env` | Task environment from SSM Parameter Store; no secrets needed with IAM |
-| Conversation state | Client sends `history` | Same; server-side or signed history once clarification limits must be enforced |
+| Conversation state | Client sends `history` | Server-side store keyed by conversation ID (requires a `CONTRACT.md` change) |
 | Logs | One JSON line per graph node: `request_id`, ms, tokens per model | Same lines shipped to CloudWatch, plus OTel traces |
 | Limits | LLM timeout, retries, 180 s deadline, 3 searches per Researcher run, 1 revision | Plus rate limits, input size caps, token budget per request (§6) |
 | Build | `uv.lock`, Dockerfile, CI: ruff + pytest | Image built in CI, tagged with the commit SHA, pushed to ECR |
@@ -45,24 +47,25 @@ flowchart LR
 ## 4. Knowledge pipeline
 
 - Source documents in versioned S3 with metadata the `Chunk` schema already carries: `document`, `source_type`, `effective_date`, `language`. Product and brand are added as filter fields when the corpus holds several products.
-- Ingestion runs offline, never in the request path. Each run produces a new index version; the service switches only after the eval passes on it.
+- Ingestion runs offline, never in the request path. Each run builds a new index alongside the live one, never modifying it in place. The eval runs on the new index in staging; promotion switches the index ID the service reads, and the previous index is kept for rollback (Bedrock mechanism *to verify*).
 - Before trusting managed parsing, check per document family against golden questions:
   - troubleshooting matrices keep the link between symptom and cause (plain text extraction lost it on page 13);
   - facts that exist only in figures (Fig. 4, installation zones) are recoverable or flagged as not covered;
   - page numbers and section headings survive, so citations point to a place the technician can open;
   - safety warnings stay in the same chunk as their procedure.
 - Hand transcriptions (D27) do not scale; they are replaced by layout-aware parsing or VLM figure descriptions, checked the same way.
-- **Languages:** indexing only English works because this manual's language sections are parallel. With asymmetric coverage across documents, all languages are indexed, parallel passages deduplicated, and answers stay in the technician's language.
-- **Authority:** bulletins supersede manuals; ranking uses `source_type` and `effective_date`.
+- **Languages:** Tier 0 indexes only English, which is valid only because this manual repeats the same content in every language. Production documents will not have parallel coverage, so all languages are indexed. Retrieval works across languages (multilingual embeddings or query translation), parallel passages are deduplicated, citations point to the page in the technician's language, and answers stay in that language.
+- **Authority:** each document carries explicit `status` (active, superseded, withdrawn), `supersedes` (document or section IDs) and `applies_to` (products or models), set at ingestion by the document owner. Retrieval excludes withdrawn documents and prefers active ones; `source_type` and `effective_date` only break ties. Requires a `CONTRACT.md` change.
 
 ## 5. Release and evaluation
 
-1. **Every change:** CI runs ruff and pytest (today), then builds the image.
-2. **Changes to prompts, agents, model IDs, retrieval or index:** the eval runs against staging with Bedrock models, under a stated cost budget. Gates as in `DESIGN.md` § Evaluation. Today the eval is manual, 5 questions, one run each.
-3. **Before gates can block releases:** the golden set grows from pilot questions, and each question runs several times to report pass rates instead of single outcomes.
-4. **Release manifest:** image SHA, model IDs, index version. An answer can be traced to all three.
-5. **Rollout:** canary on a share of traffic, compare outcome mix, latency and error rate with the current version, then promote. Rollback returns to the previous task definition and index version.
-6. **Pilot:** one market and one group of technicians before wider release.
+1. **Pipeline:** push → CI (lint, tests, image build) → staging deploy → eval gate → canary → production. Today CI runs lint and tests only.
+2. **Infrastructure as code:** all infrastructure is defined as code (Terraform or CDK), reviewed like application code; staging and production come from the same definitions.
+3. **Eval gate:** runs in staging when prompts, agents, models, retrieval or the index change, under a stated cost budget. Gates as in `DESIGN.md` § Evaluation.
+4. **Eval robustness:** today the eval is manual, 5 questions, one run each; it informs releases but cannot block them. It blocks once the golden set is built with pilot technicians and support staff, stratified by product, language, document type and expected outcome (including injection attempts), and each question runs several times to report pass rates.
+5. **Versioning:** a release is image SHA, prompt version, model IDs and index version; every answer is traceable to all four. Every eval result also records the golden set version, so results are comparable.
+6. **Rollout and rollback:** canary on a share of traffic, compared with the current release on outcome mix, latency and error rate, then promoted. Alarms roll back automatically to the previous release as a whole.
+7. **Pilot:** one market and one group of technicians before wider release.
 
 ## 6. Operations
 
@@ -71,6 +74,7 @@ flowchart LR
 - **Today:** per-node JSON logs with latency, outcome, verdict, issues and token counts. Logs do not include question text; Verifier `issues` can quote answer content.
 - Added: OTel traces per request covering agent steps and tool calls (Langfuse or CloudWatch as backend); `request_id` returned to the caller to join feedback to traces.
 - Metrics and alarms: outcome mix (answer, clarify, abstain, refuse), revision rate, malformed-output rate, 502 and 504 rates, p50/p95 latency, tokens and cost per request.
+- Quality monitoring: a sample of live traffic is scored offline by an LLM judge (a different model from the Verifier, calibrated against human review) for groundedness and relevance. Score drops alarm; low scores go to the review queue. Requires a retention policy for question text.
 
 ### Cost and latency
 
@@ -91,14 +95,14 @@ flowchart LR
 
 ## 7. Security and compliance
 
-- **Authentication:** calls come from the pro software backend with a token validated at the ALB; the technician identity is passed on for audit and quotas.
-- **Abuse:** WAF rate limits; maximum question and history size (requires a `CONTRACT.md` change).
-- **Prompt injection:** today there is no input defence; grounding is enforced on output by the citation check and Verifier. Added: input screening, and treating retrieved text as data, which matters once bulletins or third-party documents enter the corpus.
-- **History integrity:** client-held history can be forged (e.g. fake assistant turns); signed or server-held history before relying on it for policy.
+- **Authentication:** calls come from the pro software backend with a token validated at the ALB; the technician identity arrives as a signed claim from the identity provider, validated by the service, not as a plain ID the caller could set. It scopes conversations, audit and quotas.
+- **Abuse:** WAF rate limits; maximum question size and conversation length (requires a `CONTRACT.md` change).
+- **Prompt injection:** today grounding is enforced on output only, by the citation check and Verifier. Production adds layered defences: user input and retrieved documents are passed as delimited data, never as instructions; agents get only the tools they need (search and read); input size limits; a managed guardrail service (e.g. Bedrock Guardrails, *to verify*); injection cases in the golden set.
+- **Conversation integrity:** history is held server-side only, scoped to the authenticated technician; client-supplied history is not accepted.
 - **Network and access:** private subnets, VPC endpoints for Bedrock and S3, least-privilege task role.
 - **Data protection (GDPR):** EU region, log retention limits, no personal data in logs beyond the technician ID, Bedrock data-use terms reviewed (*to verify*).
 
-## Open questions for Fluidra
+## Open questions
 
 - Expected traffic and concurrency per market.
 - Identity provider and the software surface that will call the API.

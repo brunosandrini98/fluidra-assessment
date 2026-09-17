@@ -261,8 +261,8 @@ Append-only. To change a decision, add a new entry that supersedes it. Status: `
 ## D32 — Production target
 2026-09-16 · provisional · extends D18
 
-**Decision:** AWS, one EU region. ECS Fargate runs the container behind WAF and an ALB; Bedrock serves the models; a Bedrock Knowledge Base implements `search()`; ingestion runs offline and produces versioned indexes. AgentCore Runtime is the named alternative for compute. Described in `DEPLOYMENT.md`; AWS capabilities it relies on are marked to verify.
-**Consequences:** The ALB idle timeout must exceed the request deadline. Moving to Bedrock adds `langchain-aws` and changes the error mapping in `llm.py` (D29).
+**Decision:** AWS, one EU region. ECS Fargate runs the container behind WAF and an ALB; Bedrock serves the models; a Bedrock Knowledge Base implements `search()`; ingestion runs offline and produces versioned indexes. AgentCore Runtime is the named alternative for compute. Conversation state is held server-side only; client-supplied history is not accepted. Production streams progress or runs requests as async jobs instead of holding synchronous requests. Infrastructure is defined as code. Technician identity arrives as a signed claim. Described in `DEPLOYMENT.md`; AWS capabilities it relies on are marked to verify.
+**Consequences:** The ALB idle timeout must exceed the request deadline. Moving to Bedrock adds `langchain-aws` and changes the error mapping in `llm.py` (D29). `CONTRACT.md` changes: `/ask` takes a conversation ID instead of `history`, and `Chunk` gains authority fields.
 
 ## D33 — Container image
 2026-09-16 · fixed
