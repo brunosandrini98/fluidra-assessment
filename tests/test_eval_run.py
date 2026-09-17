@@ -1,6 +1,8 @@
+import hashlib
 import json
 import logging
 import re
+from collections import Counter
 
 import pytest
 
@@ -160,6 +162,33 @@ def test_malformed_output_sets_error_and_keeps_response(tmp_path):
     }
     assert by_id["t0-04"].response is not None
     assert code == 1
+
+
+def test_categories_cover_every_category_including_injection(tmp_path):  # D34
+    _, report, _ = run(tmp_path, stub())
+    expected_totals = Counter(r.category for r in RECORDS)
+    assert {c.category for c in report.categories} == set(expected_totals)
+    assert "injection" in expected_totals
+    by_cat = {c.category: c for c in report.categories}
+    for category, total in expected_totals.items():
+        assert by_cat[category].total == total
+
+
+def test_run_metadata(tmp_path):  # D34
+    _, report, _ = run(tmp_path, stub())
+    assert report.run.golden_sha256 == hashlib.sha256(GOLDEN.read_bytes()).hexdigest()
+    assert "anthropic_api_key" not in report.run.settings
+    assert report.run.settings["researcher_model"] == Settings().researcher_model
+    assert report.run.commit and report.run.commit != "unknown"
+
+
+def test_render_includes_category_table_and_injection_section(tmp_path, capsys):  # D34
+    run(tmp_path, stub())
+    out = capsys.readouterr().out
+    assert "cat" in out and "ms" in out and "tokens" in out
+    assert "injection" in out
+    assert "Injection (report only)" in out
+    assert "g-22" in out and "g-23" in out
 
 
 def test_setup_error_returns_2_without_report(tmp_path, monkeypatch, capsys):

@@ -6,17 +6,25 @@ from pool_qa.eval.gates import (
     FALSE_ANSWERS,
     LANGUAGE,
     OUTCOMES,
+    CategoryResult,
     ErrorInfo,
     QuestionResult,
     citation_issues,
+    compute_categories,
     compute_gates,
     tier0_status,
 )
 
 
-def result(id, expected, resp=None, error=None, pages=(), language="en"):
+def result(id, expected, resp=None, error=None, pages=(), language="en", category=""):
     return QuestionResult(
-        id=id, expected_outcome=expected, expected_pages=list(pages), response=resp, error=error, language=language
+        id=id,
+        expected_outcome=expected,
+        expected_pages=list(pages),
+        response=resp,
+        error=error,
+        language=language,
+        category=category,
     )
 
 
@@ -138,6 +146,25 @@ def test_language_gate_fails_on_mismatched_language():
     g = gate(compute_gates([result("t0-01", "answer", spanish_answer, pages=[11])], CHUNKS), LANGUAGE)
     assert g.status == "fail"
     assert g.failures == ["t0-01: expected en, detected es"]
+
+
+def test_compute_categories_counts_totals_matches_and_errors():
+    results = [
+        result("a", "answer", response(), pages=[11], category="procedure"),
+        result("b", "answer", response("abstain"), pages=[11], category="procedure"),
+        result("c", "abstain", error=ErrorInfo(type="timeout", detail=""), category="procedure"),
+        result("d", "abstain", response("abstain"), category="injection"),
+    ]
+    by_cat = {c.category: c for c in compute_categories(results)}
+    assert by_cat["procedure"] == CategoryResult(category="procedure", total=3, outcome_matches=1, errors=1)
+    assert by_cat["injection"] == CategoryResult(category="injection", total=1, outcome_matches=1, errors=0)
+
+
+def test_compute_categories_includes_gated_out_categories():
+    results = [result("g-22", "abstain", response("answer"), category="injection")]
+    categories = compute_categories(results)
+    assert [c.category for c in categories] == ["injection"]
+    assert categories[0].outcome_matches == 0
 
 
 def test_malformed_output_with_response_fails_completed_and_outcomes_and_is_not_a_correct_abstain():

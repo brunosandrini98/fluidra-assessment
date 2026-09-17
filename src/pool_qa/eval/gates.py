@@ -41,6 +41,13 @@ class QuestionResult(BaseModel):
     retrieved: list[str] = []
 
 
+class CategoryResult(BaseModel):
+    category: str
+    total: int
+    outcome_matches: int
+    errors: int
+
+
 class GateResult(BaseModel):
     name: str
     tier: int
@@ -81,6 +88,21 @@ def _gate(name: str, threshold: str, value: str, failures: list[str]) -> GateRes
         status="fail" if failures else "pass",
         failures=failures,
     )
+
+
+def compute_categories(results: list[QuestionResult]) -> list[CategoryResult]:
+    """Per-category totals over every result, including GATED_OUT categories."""
+    by_category: dict[str, CategoryResult] = {}
+    for r in results:
+        cat = by_category.setdefault(
+            r.category, CategoryResult(category=r.category, total=0, outcome_matches=0, errors=0)
+        )
+        cat.total += 1
+        if r.error is not None:
+            cat.errors += 1
+        elif r.response is not None and r.response.outcome == r.expected_outcome:
+            cat.outcome_matches += 1
+    return list(by_category.values())
 
 
 def compute_gates(results: list[QuestionResult], chunks: dict[str, Chunk]) -> list[GateResult]:

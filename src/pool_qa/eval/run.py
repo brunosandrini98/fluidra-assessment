@@ -1,6 +1,8 @@
 import argparse
 import asyncio
+import hashlib
 import logging
+import subprocess
 import sys
 import time
 from datetime import UTC, datetime
@@ -12,9 +14,11 @@ from pydantic import BaseModel
 from pool_qa.contract import AskRequest, Chunk, GoldenRecord
 from pool_qa.eval.capture import capture, malformed, retrieved, tokens
 from pool_qa.eval.gates import (
+    CategoryResult,
     ErrorInfo,
     GateResult,
     QuestionResult,
+    compute_categories,
     compute_gates,
     tier0_status,
 )
@@ -43,17 +47,48 @@ class RetrievalSummary(BaseModel):
     results: list[RetrievalResult]
 
 
+class RunInfo(BaseModel):
+    commit: str
+    golden_sha256: str
+    settings: dict
+
+
 class Report(BaseModel):
     created_at: datetime
     tier0: Literal["pass", "fail"]
+    run: RunInfo
     results: list[QuestionResult]
     gates: list[GateResult]
+    categories: list[CategoryResult]
     retrieval: RetrievalSummary
 
 
 def load_golden(path: Path) -> list[GoldenRecord]:
     with path.open(encoding="utf-8") as f:
         return [GoldenRecord.model_validate_json(line) for line in f if line.strip()]
+
+
+def git_commit() -> str:
+    try:
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True, cwd=ROOT
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True, cwd=ROOT
+            ).stdout.strip()
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return f"{head}+dirty" if dirty else head
+
+
+def run_info(golden_path: Path, settings: Settings) -> RunInfo:
+    return RunInfo(
+        commit=git_commit(),
+        golden_sha256=hashlib.sha256(golden_path.read_bytes()).hexdigest(),
+        settings=settings.model_dump(mode="json", exclude={"anthropic_api_key"}),
+    )
 
 
 async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
@@ -91,11 +126,22 @@ async def run_all(records: list[GoldenRecord], ask) -> list[QuestionResult]:
     return results
 
 
+def _total_tokens(usage: dict[str, dict[str, int]]) -> int:
+    return sum(bucket["input"] + bucket["output"] for bucket in usage.values())
+
+
 def render(report: Report, chunks: dict[str, Chunk]) -> str:
-    lines = [f"{'id':<8}{'expected':<10}{'actual':<10}citations / error"]
+    lines = [f"{'id':<8}{'cat':<16}{'expected':<10}{'actual':<10}{'ms':<8}{'tokens':<8}citations / error"]
     for r in report.results:
         actual, detail = (r.response.outcome, len(r.response.citations)) if r.response else ("error", r.error.type)
-        lines.append(f"{r.id:<8}{r.expected_outcome:<10}{actual:<10}{detail}")
+        ms = r.latency_ms if r.latency_ms is not None else "-"
+        lines.append(
+            f"{r.id:<8}{r.category:<16}{r.expected_outcome:<10}{actual:<10}{ms!s:<8}{_total_tokens(r.tokens):<8}{detail}"
+        )
+    lines.append("")
+    lines.append(f"{'category':<16}{'total':<7}{'outcome_matches':<17}errors")
+    for c in report.categories:
+        lines.append(f"{c.category:<16}{c.total:<7}{c.outcome_matches:<17}{c.errors}")
     lines.append("")
     lines.append(f"{'gate':<42}{'tier':<6}{'threshold':<11}{'value':<8}status")
     for g in report.gates:
@@ -106,6 +152,13 @@ def render(report: Report, chunks: dict[str, Chunk]) -> str:
     hits, total, misses = live_retrieval(report.results, chunks)
     lines.append(f"Expected page retrieved (live run): {hits}/{total}")
     lines += [f"  - {miss}" for miss in misses]
+    lines.append("")
+    lines.append("Injection (report only)")
+    for r in report.results:
+        if r.category != "injection":
+            continue
+        actual = r.response.outcome if r.response else f"error: {r.error.type}"
+        lines.append(f"  - {r.id}: expected {r.expected_outcome}, actual {actual}")
     lines += ["", f"Tier 0: {report.tier0}"]
     return "\n".join(lines)
 
@@ -135,8 +188,10 @@ def main(argv: list[str] | None = None, ask=None, search_fn=search) -> int:
     report = Report(
         created_at=datetime.now(UTC),
         tier0=tier0_status(gates),
+        run=run_info(args.golden, settings),
         results=results,
         gates=gates,
+        categories=compute_categories(results),
         retrieval=RetrievalSummary(
             k=settings.search_k,
             recall_at_1=recall_at(retrieval, 1),
