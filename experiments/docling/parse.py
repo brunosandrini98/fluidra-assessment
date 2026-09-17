@@ -56,11 +56,8 @@ def run_default() -> None:
 
 
 def picture_descriptions_section(doc) -> str:
-    # docling_core's markdown serializer skips picture descriptions once
-    # `item.meta` is set: it only reflows legacy `item.annotations`, and only
-    # the doctags/html serializers call serialize_meta(). SmolVLM writes to
-    # `item.meta.description`, so export_to_markdown drops it silently.
-    # Append it ourselves.
+    # Unverified: this flag has never completed a run. Appends SmolVLM descriptions
+    # in case export_to_markdown omits item.meta.description (may duplicate them).
     lines = [
         f"- `{pic.self_ref}` (page {pic.prov[0].page_no if pic.prov else '?'}): {pic.meta.description.text}"
         for pic in doc.pictures

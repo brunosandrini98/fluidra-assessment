@@ -4,7 +4,7 @@ Question: does Docling recover the page 13, 94 and 97 facts that `pypdf` loses a
 
 ## Setup
 
-- Docling 2.128.0, CPU only, 8 cores. Command in the `parse.py` docstring.
+- Docling 2.128.0, CPU only, 8 logical CPUs (`os.cpu_count()`). Command in the `parse.py` docstring.
 - Default converter (table structure on, OCR default). One untimed warm-up on page 13, then one timed conversion per page.
 
 | Run | Wall | CPU |
@@ -15,6 +15,8 @@ Question: does Docling recover the page 13, 94 and 97 facts that `pypdf` loses a
 | Page 13, full-page OCR | 41.49 s | 158.81 s |
 
 Preview run before this branch (not re-measured): install 1 min 45 s; first run including model downloads about 3.5 min.
+
+"Recovered" means present in Docling output. Every item marked Recovered on pages 94 and 97 is also in the `pypdf` text of those pages. Current ingestion reads `pypdf` text of pages 5-13 only (`ENGLISH_PAGES` in `src/pool_qa/ingest/pypdf_chunks.py`), so that text never reaches the chunks.
 
 ## Page 13: troubleshooting matrix vs `p13-1`..`p13-6`
 
@@ -47,7 +49,7 @@ Preview run before this branch (not re-measured): install 1 min 45 s; first run 
 |---|---|
 | Zone labels (Zone 0/1/2, Outdoor area, Feet cleaning) | Recovered, not linked to regions |
 | Distances (1,5 / 2,0 / 2,5 m) | Recovered as isolated values, not linked to zones |
-| Radii `r1 = 2,0 m`, `r2 = 3,5 m` | Recovered, fragmented (`r` and `2 = 3,5 m` split) |
+| Radii `r1 = 2,0 m`, `r2 = 3,5 m` | Recovered, fragmented (`r` split from `1 = 2,0 m` and `2 = 3,5 m`); `pypdf` keeps them whole |
 | Caption "Areas highlighted: the pump may be installed here" | Recovered, labelled `text` |
 | Which zone is highlighted (Zone 2) | Not recovered |
 
@@ -57,10 +59,10 @@ Preview run before this branch (not re-measured): install 1 min 45 s; first run 
 
 ## Result
 
-Docling does not recover the facts D27 transcribes by hand: 0/15 symptom-to-cause links on page 13, no pump position or connections on page 94, no highlighted zone on page 97. It does recover table text, labels and captions.
+Docling recovers none of the facts that `pypdf` loses and D27 transcribes: 0/15 symptom-to-cause links on page 13, no pump position or connections on page 94, no highlighted zone on page 97. Everything it extracts on pages 94 and 97 (captions, labels, "Max. 2 m", zone labels, distances, radii) is already in the `pypdf` text. On page 13 it adds structure `pypdf` lacks: the symptom list in order and each cause paired with its solution in one table row.
 
 ## Next step
 
 - Keep the hand transcriptions for pages 13, 94 and 97.
-- Docling is a candidate for tables and text in general.
+- Docling adds table structure over `pypdf` on page 13; its effect on the rest of the manual is untested.
 - For markers and highlighted zones, test a vision model on page or table images, checked against `data/transcriptions.jsonl`.
